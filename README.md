@@ -5,8 +5,8 @@ Status (Dec 2023): Work in progress. Initial version works.
 
 Design goals:
 * USB to I2C master.
-* Runs on of-the-shelf inexpensive hardware.
-* Simple Python API.
 * Supports Windows/Mac/Linux.
-* No driver installation required.
-* Can be easyly adapted to new hardware.
+* Uses of-the-shelf inexpensive hardware.
+* No driver installation required (emulates a serial port).
+* Simple Python API.
+* Can be easyly moded or adapted to new hardware.
