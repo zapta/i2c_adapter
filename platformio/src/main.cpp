@@ -1,23 +1,19 @@
-// #include <Adafruit_TinyUSB.h>
+// Firmware of the I2C Adapter implementation using a Raspberry Pico.
+
+
 #include <Arduino.h>
 #include <Wire.h>
 
-// TODO: Add static asserts about the buffer size.
-// TODO: Clear i2c available buffer before i2c read operation.
 // TODO: Determine optimal led blinking policy.
-// TODO: Investigate if we get a better resolution or failure errors.
-// TODO: Add a RESET command.
-// TODO: Add an INFO command, with version, etc.
 // TODO: Add support for pullup control.
+// TODO: Add support for debug info using an auxilary UART.
 
 // NOTE: Arduino Wire API documentation is here
 // https://www.arduino.cc/reference/en/language/functions/communication/wire/
 
 // All command bytes must arrive within this time period.
 static constexpr uint32_t kCommandTimeoutMillis = 250;
-// static constexpr uint32_t kCommandTimeoutMillis = 0xffffffff;
 
-// static uint8_t cmd_buffer[20];
 static uint8_t data_buffer[512];
 
 static uint32_t last_command_start_millis = 0;
@@ -91,10 +87,6 @@ static class ResetCommandHandler : public CommandHandler {
   virtual bool on_cmd_loop() override {
     Wire.end();
     Wire.begin();
-    // static_assert(sizeof(data_buffer) >= 1);
-    // if (!read_input_bytes(data_buffer, 1)) {
-    //   return false;
-    // }
     Serial.write('K');
     return true;
   }
@@ -152,9 +144,6 @@ static class WriteCommandHandler : public CommandHandler {
     _got_cmd_header = false;
     _device_addr = 0;
     _count = 0;
-    // Temp, testing the errata workaround
-    // Wire.end();
-    // Wire.begin();
   }
   virtual bool on_cmd_loop() override {
     // Read command header.
@@ -182,24 +171,14 @@ static class WriteCommandHandler : public CommandHandler {
       return false;
     }
 
-    // Clear previous write errors.
-    //
-    // Serial.print("["); Serial.print(_device_addr); Serial.print("]");
-    // Serial.print("["); Serial.print(_count); Serial.print("]");
-    // Serial.print("["); Serial.print(data_buffer[0]); Serial.print("]");
-    // Serial.print("["); Serial.print(data_buffer[1]); Serial.print("]");
+    
 
     // Device address is 7 bits LSB.
-    // const uint8_t device_addr = data_buffer[0];
-    // Wire.clearTimeoutFlag();
     Wire.beginTransmission(_device_addr);
     Wire.write(data_buffer, _count);
     status = Wire.endTransmission(true);
 
-    // NOTE: Due to this Erata, some GreenPacks may not nack when we write
-    // to the erase byte. We want to let the user to ignore this error as a 
-    // woraround.
-    // TODO: What do we want to do here with Wire.getTimeout()?
+    // TODO: Should do here if Wire.getTimeout() is true?
     
     // All done
     if (status == 0x00) {
@@ -280,7 +259,6 @@ static class ReadCommandHandler : public CommandHandler {
 
     // Here when OK, send status, count, and data.
     Serial.write('K');
-    // Serial.print("["); Serial.print(count); Serial.print("]");
     Serial.write(count >> 8);
     Serial.write(count & 0x00ff);
     for (uint16_t i = 0; i < count; i++) {
@@ -328,15 +306,10 @@ void setup() {
 static CommandHandler* current_cmd = nullptr;
 
 void loop() {
-  // Serial.printf("Loop %s\n", current_cmd? current_cmd->name() : "-");
-  // delay(300);
-
   Serial.flush();
   const uint32_t millis_now = millis();
   const bool blink =
       current_cmd || (millis_now - last_command_start_millis) < 200;
-  // millis_now & 0x0040 : millis_now & 0x0100;
-  // const bool blink = current_cmd;
   digitalWrite(LED_BUILTIN, blink);
 
   // If a command is in progress, handle it.
@@ -362,9 +335,6 @@ void loop() {
   // const char cmd_char = Serial.read();
   current_cmd = find_command_handler_by_char(data_buffer[0]);
   if (current_cmd) {
-    // Clear potential I2C errors.
-    // Wire.clearWriteError();
-    // Started a new command.
     last_command_start_millis = millis_now;
     current_cmd->on_cmd_entered();
   } else {
