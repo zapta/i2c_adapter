@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Upload from ./dist to testpypi.Assumes this config in ~/.pypirc:
+# Upload from ./dist to testpypi. Assumes this config in ~/.pypirc:
 #
 # [testpypi]
 #   username = __token__
@@ -11,6 +11,8 @@
 #
 # To install the test package
 #  pip install --index-url https://test.pypi.org/simple/ --no-deps serial_packets 
+#
+# Test PYPI is available here https://test.pypi.org
 
 # Abort if error
 set -xe

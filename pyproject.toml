@@ -9,7 +9,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "i2c_driver"
+name = "i2c-adapter"
 version = "0.0.1"
 authors = [
   { name="Zapta", email="zapta@zapta.com" },
@@ -30,7 +30,7 @@ dependencies = [
 [tool.hatch.build.targets.sdist]
 include = [
   "LICENSE",
-  "src/i2c_adapter",
+  "/src/i2cadapter",
 ]
 # NOTE: root .gitignore can't be excluded per 
 # https://github.com/pypa/hatch/discussions/368
