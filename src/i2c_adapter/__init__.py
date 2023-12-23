@@ -1,3 +1,5 @@
+# A driver for the simple I2C Adapter.
+
 from typing import Optional, List, Tuple
 from serial import Serial
 import time
@@ -36,7 +38,6 @@ class I2cAdapter:
         assert isinstance(b, int)
         assert 0 <= b <= 256
         req = bytearray()
-        # print(f"Type: {type(ord("e"))}")
         req.append(ord("e"))
         req.append(b)
         self.__serial.write(req)
@@ -47,43 +48,35 @@ class I2cAdapter:
       
     def i2c_reset(self) -> bool:
         """Reset the I2C interface. used to clear pending errors."""
-        # assert isinstance(b, int)
-        # assert 0 <= b <= 256
         req = bytearray()
-        # print(f"Type: {type(ord("e"))}")
         req.append(ord("t"))
-        # payload.append(b)
-        # print(f"Reset payload: {payload.hex(sep=" ")}")
         self.__serial.write(req)
         resp = self.__serial.read(1)
         assert isinstance(resp, bytes), type(resp)
         assert len(resp) == 1
-        # print(f"Reset resp: {resp.hex(sep=" ")}")
         return resp[0] == ord("K")
 
-    def i2c_write(self, device_address: int, data: bytearray) -> bool:
-        """Write data to the I2C device, return True if ok."""
+    def i2c_write(self, device_address: int, data: bytearray | bytes) -> bool:
+        """Write data to an I2C device, return True if ok."""
         assert isinstance(device_address, int)
         assert 0 <= device_address <= 127
-        assert isinstance(data, bytearray)
+        assert isinstance(data, bytearray) or isinstance(data, bytes)
         assert 0 < len(data) <= 256
 
-        # Construct and send the command.
+        # Construct and send the command request.
         req = bytearray()
         req.append(ord("w"))
         req.append(device_address)
-        req.append(len(data) // 256)
-        req.append(len(data) % 256)
+        req.append(len(data) // 256)  # Count MSB
+        req.append(len(data) % 256)   # Count LSB
         req.extend(data)
         n = self.__serial.write(req)
-        # print(f"write: payload {payload.hex(sep=" ")}", flush=True)
         if n != len(req):
             print(f"I2C write: write mismatch, expected {len(req)}, got {n}")
             return False
 
         # Read the status flag.
         resp = self.__serial.read(1)
-        # print(f"write: resp1: {resp.hex(sep=" ")}")
         assert isinstance(data, bytearray), type(data)
         if len(resp) != 1:
             print(f"I2C write: status read mismatch, expected {1}, got {len(resp)}")
@@ -97,24 +90,22 @@ class I2cAdapter:
         # Read the extra info status byte.
         resp = self.__serial.read(1)
         assert isinstance(data, bytearray), type(data)
-        # print(f"write: resp2: {resp.hex(sep=" ")}")
         if len(resp) != 1:
             print(
                 f"I2C write: extra status read mismatch, expected {1}, got {len(resp)}"
             )
             return False
-        # if not workaround:
         print(f"I2C write: failed with status = {resp[0]:02x}")
         return False
 
     def i2c_read(self, device_address: int, byte_count: int) -> Optional[bytearray]:
-        """Read a given number of bytes from the device. Returns the bytes or None if error."""
+        """Read a given number of bytes from an I1C device. Returns the bytes or None if error."""
         assert isinstance(device_address, int)
         assert 0 <= device_address <= 127
         assert isinstance(byte_count, int)
         assert 0 < byte_count <= 256
 
-        # Construct and send the command
+        # Construct and send the command request.
         req = bytearray()
         req.append(ord("r"))
         req.append(device_address)
@@ -136,8 +127,9 @@ class I2cAdapter:
             print(f"I2C read: unexpected status flag in response: {resp}")
             return None
 
-        # Handle the error case.
+        # Handle the case of an error
         if status_flag == ord("E"):
+            # Read the additional error info byte.
             resp = self.__serial.read(1)
             assert isinstance(resp, bytes), type(resp)
             if len(resp) != 1:
@@ -148,7 +140,9 @@ class I2cAdapter:
             print(f"I2C read: failed with status = {resp[1]:02x}")
             return None
 
-        # Here we are in the OK case. First read the count.
+        # Handle the OK case.
+        #
+        # Read the returned data count.
         resp = self.__serial.read(2)
         assert isinstance(resp, bytes), type(resp)
         if len(resp) != 2:
@@ -161,7 +155,7 @@ class I2cAdapter:
             )
             return None
 
-        # Now read the data
+        # Read the data bytes
         resp = self.__serial.read(byte_count)
         assert isinstance(resp, bytes), type(resp)
         if len(resp) != byte_count:
