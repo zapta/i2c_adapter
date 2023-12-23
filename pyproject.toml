@@ -30,7 +30,7 @@ dependencies = [
 [tool.hatch.build.targets.sdist]
 include = [
   "LICENSE",
-  "src/i2cadapter",
+  "/src/i2cadapter",
 ]
 # NOTE: root .gitignore can't be excluded per 
 # https://github.com/pypa/hatch/discussions/368
