@@ -1,7 +1,7 @@
 # i2c_adapter
 A simple USB to I2C adapter.
 
-Status (Dec 2023): Fully functional and is use in programming Renesas GreenPak devcies.
+Status (Dec 2023): Fully functional. Used successfuly by the Greenpak driver [https://pypi.org/project/greenpak](https://pypi.org/project/greenpak).
 
 Design goals:
 * USB to I2C master.
