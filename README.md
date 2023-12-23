@@ -1,7 +1,7 @@
 # i2c_adapter
 A simple USB to I2C adapter.
 
-Status (Dec 2023): Work in progress. Initial version works.
+Status (Dec 2023): Fully functional and is use in programming Renesas GreenPak devcies.
 
 Design goals:
 * USB to I2C master.
