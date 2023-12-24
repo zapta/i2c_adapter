@@ -46,17 +46,8 @@ class I2cAdapter:
         assert len(resp) == 1
         return resp[0] == b
       
-    # def i2c_reset(self) -> bool:
-    #     """Reset the I2C interface. used to clear pending errors."""
-    #     req = bytearray()
-    #     req.append(ord("t"))
-    #     self.__serial.write(req)
-    #     resp = self.__serial.read(1)
-    #     assert isinstance(resp, bytes), type(resp)
-    #     assert len(resp) == 1
-    #     return resp[0] == ord("K")
 
-    def i2c_write(self, device_address: int, data: bytearray | bytes, silent=False) -> bool:
+    def write(self, device_address: int, data: bytearray | bytes, silent=False) -> bool:
         """Write data to an I2C device, return True if ok. 
         If silent, be silent for I2C error, but not for adapter errors.
         """
@@ -101,7 +92,7 @@ class I2cAdapter:
             print(f"I2C write: failed with status = {resp[0]:02x}")
         return False
 
-    def i2c_read(self, device_address: int, byte_count: int, silent=False) -> Optional[bytearray]:
+    def read(self, device_address: int, byte_count: int, silent=False) -> Optional[bytearray]:
         """Read a given number of bytes from an I1C device. Returns the bytes or None if error.
         If silent, be silent for I2C error, but not for adapter errors.
         """
