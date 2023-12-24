@@ -2,7 +2,6 @@
 
 # A script to diff the pip installed serial_packets against the local git repo
 
-#pip_pkg="/c/Users/user/AppData/Roaming/Python/Python311/site-packages/serial_packets"
 pip_pkg="/c/Users/user/AppData/Local/Programs/Python/Python312/Lib/site-packages/i2c_adapter"
 
 
