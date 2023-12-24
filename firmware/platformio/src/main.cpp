@@ -1,10 +1,11 @@
 // Firmware of the I2C Adapter implementation using a Raspberry Pico.
 
-
 #include <Arduino.h>
 #include <Wire.h>
 
-// TODO: Determine optimal led blinking policy.
+static constexpr uint8_t kApiVersion = 1;
+static constexpr uint16_t kFirmwareVersion = 1;
+
 // TODO: Add support for pullup control.
 // TODO: Add support for debug info using an auxilary UART.
 
@@ -16,11 +17,26 @@ static constexpr uint32_t kCommandTimeoutMillis = 250;
 
 static uint8_t data_buffer[512];
 
-static uint32_t last_command_start_millis = 0;
+// A simple timer.
+// Cveate: overflows 50 days after last reset().
+class Timer {
+ public:
+  Timer() { reset(millis()); }
+  void reset(uint32_t millis_now) { _start_millis = millis_now; }
+  uint32_t elapsed_millis(uint32_t millis_now) {
+    return millis_now - _start_millis;
+  }
+
+ private:
+  uint32_t _start_millis;
+};
+
+// Time since the start of last cmd.
+static Timer cmd_timer;
 
 // Read exactly n chanrs to data buffer. If not enough bytes, none is read
 // and the function returns false.
-static bool read_input_bytes(uint8_t* bfr, uint16_t n) {
+static bool read_serial_bytes(uint8_t* bfr, uint16_t n) {
   // Handle the case where not enough chars.
   const int avail = Serial.available();
   if (avail < (int)n) {
@@ -64,7 +80,7 @@ static class EchoCommandHandler : public CommandHandler {
   EchoCommandHandler() : CommandHandler("ECHO") {}
   virtual bool on_cmd_loop() override {
     static_assert(sizeof(data_buffer) >= 1);
-    if (!read_input_bytes(data_buffer, 1)) {
+    if (!read_serial_bytes(data_buffer, 1)) {
       return false;
     }
     Serial.write(data_buffer[0]);
@@ -99,14 +115,18 @@ static class EchoCommandHandler : public CommandHandler {
 // - byte 0:  'i'
 //
 // Response:
-// - byte 0:  Number of bytes to follow. Equals 1.
-// - byte 1:  API version of this driver. Equals 1.
+// - byte 0:  Number of bytes to follow (3).
+// - byte 1:  Version of wire format API.
+// - byte 2:  MSB of firmware version.
+// - byte 3:  LSB of firmware version.
 static class InfoCommandHandler : public CommandHandler {
  public:
   InfoCommandHandler() : CommandHandler("INFO") {}
   virtual bool on_cmd_loop() override {
-    Serial.write(0x01);  // Number of bytes to follow.
-    Serial.write(0x01);  // API version.
+    Serial.write(0x03);  // Number of bytes to follow.
+    Serial.write(kApiVersion);  // API version.
+    Serial.write(kFirmwareVersion >> 8);    // Firmware version MSB.
+    Serial.write(kFirmwareVersion & 0x08);  // Firmware version LSB.
     return true;
   }
 } info_cmd_handler;
@@ -149,7 +169,7 @@ static class WriteCommandHandler : public CommandHandler {
     // Read command header.
     if (!_got_cmd_header) {
       static_assert(sizeof(data_buffer) >= 3);
-      if (!read_input_bytes(data_buffer, 3)) {
+      if (!read_serial_bytes(data_buffer, 3)) {
         return false;
       }
       _device_addr = data_buffer[0];
@@ -167,11 +187,9 @@ static class WriteCommandHandler : public CommandHandler {
 
     // Read the data bytes
     static_assert(sizeof(data_buffer) >= 512);
-    if (!read_input_bytes(data_buffer, _count)) {
+    if (!read_serial_bytes(data_buffer, _count)) {
       return false;
     }
-
-    
 
     // Device address is 7 bits LSB.
     Wire.beginTransmission(_device_addr);
@@ -179,7 +197,7 @@ static class WriteCommandHandler : public CommandHandler {
     status = Wire.endTransmission(true);
 
     // TODO: Should do here if Wire.getTimeout() is true?
-    
+
     // All done
     if (status == 0x00) {
       Serial.write('K');
@@ -221,7 +239,6 @@ static class WriteCommandHandler : public CommandHandler {
 //  2 : Bytes not available for reading.
 //  8 : Device address out of range..
 //  9 : Count out of range.
-
 static class ReadCommandHandler : public CommandHandler {
  public:
   ReadCommandHandler() : CommandHandler("READ") {}
@@ -230,8 +247,8 @@ static class ReadCommandHandler : public CommandHandler {
     // Get the command address and the count.
 
     static_assert(sizeof(data_buffer) >= 3);
-    if (!read_input_bytes(data_buffer, 3)) {
-      return false; // try later
+    if (!read_serial_bytes(data_buffer, 3)) {
+      return false;  // try later
     }
 
     // Sanity check the command
@@ -289,7 +306,6 @@ static CommandHandler* find_command_handler_by_char(const char cmd_char) {
 }
 
 void setup() {
-  // SerialUSB.begin(19200);
   pinMode(LED_BUILTIN, OUTPUT);
 
   // USB serial.
@@ -308,34 +324,43 @@ static CommandHandler* current_cmd = nullptr;
 void loop() {
   Serial.flush();
   const uint32_t millis_now = millis();
-  const bool blink =
-      current_cmd || (millis_now - last_command_start_millis) < 200;
-  digitalWrite(LED_BUILTIN, blink);
+  const uint32_t millis_since_cmd_start = cmd_timer.elapsed_millis(millis_now);
+
+  // Update LED state.
+  {
+    const bool is_active = current_cmd || millis_since_cmd_start < 200;
+    const bool led_state =
+        is_active ? true : (millis_since_cmd_start & 0b11111111100) == 0;
+    digitalWrite(LED_BUILTIN, led_state);
+  }
 
   // If a command is in progress, handle it.
   if (current_cmd) {
-    bool cmd_completed = current_cmd->on_cmd_loop();
-    if (!cmd_completed && (millis() - last_command_start_millis > kCommandTimeoutMillis)) {
+    // Handle command timeout.
+    if (millis_since_cmd_start > kCommandTimeoutMillis) {
       current_cmd->on_cmd_aborted();
-      cmd_completed = true;
+      current_cmd = nullptr;
+      return;
     }
+    // Invoke command loop.
+    const bool cmd_completed = current_cmd->on_cmd_loop();
     if (cmd_completed) {
       current_cmd = nullptr;
     }
     return;
   }
 
-  // Not in a command. Try to read selection char of next command.
+  // Not in a command.
+  // Try to read selection char of next command.
   static_assert(sizeof(data_buffer) >= 1);
-  if (!read_input_bytes(data_buffer, 1)) {
+  if (!read_serial_bytes(data_buffer, 1)) {
     return;
   }
 
-  // Dispatch the next command.
-  // const char cmd_char = Serial.read();
+  // Dispatch the next command by the selection char.
   current_cmd = find_command_handler_by_char(data_buffer[0]);
   if (current_cmd) {
-    last_command_start_millis = millis_now;
+    cmd_timer.reset(millis_now);
     current_cmd->on_cmd_entered();
   } else {
     // Unknown command selector. We ignore it silently.
