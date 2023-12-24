@@ -143,7 +143,7 @@ class I2cAdapter:
                 )
                 return None
             if not slient:
-            print(f"I2C read: failed with status = {resp[1]:02x}")
+                print(f"I2C read: failed with status = {resp[1]:02x}")
             return None
 
         # Handle the OK case.
