@@ -142,6 +142,7 @@ class I2cAdapter:
                     f"I2C read: error info read mismatch, expected {1}, got {len(resp)}"
                 )
                 return None
+            if not slient:
             print(f"I2C read: failed with status = {resp[1]:02x}")
             return None
 

@@ -81,16 +81,16 @@ static class EchoCommandHandler : public CommandHandler {
 // Response:
 // - byte 0:  'K' to indicate OK. This command doesn't fail.
 //
-static class ResetCommandHandler : public CommandHandler {
- public:
-  ResetCommandHandler() : CommandHandler("RESET") {}
-  virtual bool on_cmd_loop() override {
-    Wire.end();
-    Wire.begin();
-    Serial.write('K');
-    return true;
-  }
-} reset_cmd_handler;
+// static class ResetCommandHandler : public CommandHandler {
+//  public:
+//   ResetCommandHandler() : CommandHandler("RESET") {}
+//   virtual bool on_cmd_loop() override {
+//     Wire.end();
+//     Wire.begin();
+//     Serial.write('K');
+//     return true;
+//   }
+// } reset_cmd_handler;
 
 // INFO command. Provides information about this driver. Currently
 // it's a skeleton for future values that will be returned.
@@ -275,8 +275,8 @@ static CommandHandler* find_command_handler_by_char(const char cmd_char) {
   switch (cmd_char) {
     case 'e':
       return &echo_cmd_handler;
-    case 't':
-      return &reset_cmd_handler;
+    // case 't':
+    //   return &reset_cmd_handler;
     case 'i':
       return &info_cmd_handler;
     case 'w':
