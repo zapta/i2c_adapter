@@ -98,7 +98,7 @@ class I2cAdapter:
             )
             return False
         if not silent:
-        print(f"I2C write: failed with status = {resp[0]:02x}")
+            print(f"I2C write: failed with status = {resp[0]:02x}")
         return False
 
     def i2c_read(self, device_address: int, byte_count: int, silent=False) -> Optional[bytearray]:
