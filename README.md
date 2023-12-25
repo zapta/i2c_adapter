@@ -59,11 +59,11 @@ print(data)
 ### Step by step instructions
 
 1. Download the file firmware.uf2 from here <https://github.com/zapta/i2c_adapter/tree/main/firmware/release>
-1. **Press and hold the button*** of the Raspberry Pico button, connect it to a computer using a USB cable, and release the button.
+1. **Press and hold the BOOTSEL button*** of the Raspberry Pico, connect it to a computer using a USB cable, and then release the button.
 1. Confirm that the computer now has a new drive and that the Raspberry Pico LED is off.
 1. Copy the firmware.uf2 file to that drive.
 1. Confirm that the drive disappeared from your computer, and that the Raspberry Pico LED blinks shortly every 2 seconds.
-1. Reconnect the Raspberry Pico again to the computer (without pressing its button), and confirm that a new serial port appeared on your computer, and that the Raspberry Pico LED blinks shortly every 2 seconds.
+1. Reconnect the Raspberry Pico again to the computer (without pressing its BOOTSEL button), and confirm that a new serial port appeared on your computer, and that the Raspberry Pico LED blinks shortly every 2 seconds.
 1. Your Raspberry Pico is now a I2C Adapter and is ready to use.
 
 <br>
