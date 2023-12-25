@@ -81,7 +81,7 @@ print(data)
 |--------------|:-----------:|------------|
 | GND      | 3  |  Connect to the I2C device's GND.  This pin is nterchangeable with the other GND pins 8, 13, 18, 23, 28, 33, 38.   |
 | SDA| 4      | Connect to the I2C device's SDA. If the I2C device doesn't have a pullup resistor, connect a pullup resistor between SDA and 3.3V.    | 
-| SCK      | 5  | Connect to the I2C device's SCK. If the I2C device doesn't have a pullup resistor, connect a pullup resistor between SCK and 3.3V.       |
+| SCL      | 5  | Connect to the I2C device's SCL. If the I2C device doesn't have a pullup resistor, connect a pullup resistor between SCL and 3.3V.       |
 | 3.3V Supply     | 38  | Optional. May be used to power the I2C device.    |
 
 <br>
