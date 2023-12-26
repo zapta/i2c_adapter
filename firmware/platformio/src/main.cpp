@@ -17,6 +17,10 @@ static constexpr uint32_t kCommandTimeoutMillis = 250;
 
 static uint8_t data_buffer[512];
 
+// Defining our own Wire object allows us to select the
+// I2C hardware channel and pins to use.
+static TwoWire i2c(BOARD_SDA_PIN, BOARD_SCL_PIN);
+
 // A simple timer.
 // Cveate: overflows 50 days after last reset().
 class Timer {
@@ -172,11 +176,11 @@ static class WriteCommandHandler : public CommandHandler {
     }
 
     // Device address is 7 bits LSB.
-    Wire.beginTransmission(_device_addr);
-    Wire.write(data_buffer, _count);
-    status = Wire.endTransmission(true);
+    i2c.beginTransmission(_device_addr);
+    i2c.write(data_buffer, _count);
+    status = i2c.endTransmission(true);
 
-    // TODO: Should do here if Wire.getTimeout() is true?
+    // TODO: Should do here if i2c_chan.getTimeout() is true?
 
     // All done
     if (status == 0x00) {
@@ -242,12 +246,12 @@ static class ReadCommandHandler : public CommandHandler {
     }
 
     // Read the bytes from the I2C devcie.
-    const size_t actual_count = Wire.requestFrom(device_addr, count, true);
+    const size_t actual_count = i2c.requestFrom(device_addr, count, true);
 
     // Sanity check the response.
-    status = (actual_count != count)       ? 0x01
-             : (Wire.available() != count) ? 0x02
-                                           : 0x00;
+    status = (actual_count != count)      ? 0x01
+             : (i2c.available() != count) ? 0x02
+                                          : 0x00;
     if (status != 0x00) {
       Serial.write('E');
       Serial.write(status);
@@ -259,7 +263,7 @@ static class ReadCommandHandler : public CommandHandler {
     Serial.write(count >> 8);
     Serial.write(count & 0x00ff);
     for (uint16_t i = 0; i < count; i++) {
-      Serial.write(Wire.read());
+      Serial.write(i2c.read());
     }
     return true;
   }
@@ -286,16 +290,14 @@ static CommandHandler* find_command_handler_by_char(const char cmd_char) {
 }
 
 void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(BOARD_LED_PIN, OUTPUT);
 
   // USB serial.
-  // Per https://arduino-pico.readthedocs.io/en/latest/serial.html
   Serial.begin(115200);
 
-  // Pins are SD=4, SCL=5
-  Wire.setClock(100000);   // 100Khz.
-  Wire.setTimeout(50000);  // 50ms timeout.
-  Wire.begin();
+  i2c.setClock(100000);   // 100Khz.
+  i2c.setTimeout(50000);  // 50ms timeout.
+  i2c.begin();
 }
 
 // If in command, points to the command handler.
@@ -311,7 +313,7 @@ void loop() {
     const bool is_active = current_cmd || millis_since_cmd_start < 200;
     const bool led_state =
         is_active ? true : (millis_since_cmd_start & 0b11111111100) == 0;
-    digitalWrite(LED_BUILTIN, led_state);
+    digitalWrite(BOARD_LED_PIN, led_state);
   }
 
   // If a command is in progress, handle it.
