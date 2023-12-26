@@ -21,13 +21,14 @@ static uint8_t data_buffer[512];
 // I2C hardware channel and pins to use.
 static TwoWire i2c(BOARD_SDA_PIN, BOARD_SCL_PIN);
 
+enum LedState { LED_OFF, LED_IDLE_BLINK_ON, LED_ACTIVE_ON };
+
 // Simple LED support.
 #if defined(BOARD_LED_PIN)
 static void led_setup() { pinMode(BOARD_LED_PIN, OUTPUT); }
 
-static void led_loop(bool is_active, uint32_t time_base) {
-  const bool led_state = is_active ? true : (time_base & 0b11111111100) == 0;
-  digitalWrite(BOARD_LED_PIN, led_state);
+static void led_loop(LedState led_state) {
+  digitalWrite(BOARD_LED_PIN, led_state != LED_OFF);
 }
 #endif
 
@@ -319,8 +320,14 @@ void loop() {
   const uint32_t millis_since_cmd_start = cmd_timer.elapsed_millis(millis_now);
 
   // Update LED state.
-  const bool is_active = current_cmd || millis_since_cmd_start < 200;
-  led_loop(is_active, millis_since_cmd_start);
+  {
+    const bool is_active = current_cmd || millis_since_cmd_start < 200;
+    const LedState led_state = is_active ? LED_ACTIVE_ON
+                               : (millis_since_cmd_start & 0b11111111100) == 0
+                                   ? LED_IDLE_BLINK_ON
+                                   : LED_OFF;
+    led_loop(led_state);
+  }
 
   // If a command is in progress, handle it.
   if (current_cmd) {
