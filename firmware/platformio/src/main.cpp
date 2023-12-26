@@ -88,26 +88,6 @@ static class EchoCommandHandler : public CommandHandler {
   }
 } echo_cmd_handler;
 
-// RESET command. Clears pending errors. Used for the Greenpack
-// erase errata.
-//
-// Command:
-// - byte 0:  't'
-//
-// Response:
-// - byte 0:  'K' to indicate OK. This command doesn't fail.
-//
-// static class ResetCommandHandler : public CommandHandler {
-//  public:
-//   ResetCommandHandler() : CommandHandler("RESET") {}
-//   virtual bool on_cmd_loop() override {
-//     Wire.end();
-//     Wire.begin();
-//     Serial.write('K');
-//     return true;
-//   }
-// } reset_cmd_handler;
-
 // INFO command. Provides information about this driver. Currently
 // it's a skeleton for future values that will be returned.
 //
@@ -123,8 +103,8 @@ static class InfoCommandHandler : public CommandHandler {
  public:
   InfoCommandHandler() : CommandHandler("INFO") {}
   virtual bool on_cmd_loop() override {
-    Serial.write(0x03);  // Number of bytes to follow.
-    Serial.write(kApiVersion);  // API version.
+    Serial.write(0x03);                     // Number of bytes to follow.
+    Serial.write(kApiVersion);              // API version.
     Serial.write(kFirmwareVersion >> 8);    // Firmware version MSB.
     Serial.write(kFirmwareVersion & 0x08);  // Firmware version LSB.
     return true;
