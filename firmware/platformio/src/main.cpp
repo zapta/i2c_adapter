@@ -21,6 +21,16 @@ static uint8_t data_buffer[512];
 // I2C hardware channel and pins to use.
 static TwoWire i2c(BOARD_SDA_PIN, BOARD_SCL_PIN);
 
+// Simple LED support.
+#if defined(BOARD_LED_PIN)
+static void led_setup() { pinMode(BOARD_LED_PIN, OUTPUT); }
+
+static void led_loop(bool is_active, uint32_t time_base) {
+  const bool led_state = is_active ? true : (time_base & 0b11111111100) == 0;
+  digitalWrite(BOARD_LED_PIN, led_state);
+}
+#endif
+
 // A simple timer.
 // Cveate: overflows 50 days after last reset().
 class Timer {
@@ -290,7 +300,7 @@ static CommandHandler* find_command_handler_by_char(const char cmd_char) {
 }
 
 void setup() {
-  pinMode(BOARD_LED_PIN, OUTPUT);
+  led_setup();
 
   // USB serial.
   Serial.begin(115200);
@@ -309,12 +319,8 @@ void loop() {
   const uint32_t millis_since_cmd_start = cmd_timer.elapsed_millis(millis_now);
 
   // Update LED state.
-  {
-    const bool is_active = current_cmd || millis_since_cmd_start < 200;
-    const bool led_state =
-        is_active ? true : (millis_since_cmd_start & 0b11111111100) == 0;
-    digitalWrite(BOARD_LED_PIN, led_state);
-  }
+  const bool is_active = current_cmd || millis_since_cmd_start < 200;
+  led_loop(is_active, millis_since_cmd_start);
 
   // If a command is in progress, handle it.
   if (current_cmd) {
@@ -344,6 +350,7 @@ void loop() {
   if (current_cmd) {
     cmd_timer.reset(millis_now);
     current_cmd->on_cmd_entered();
+    // We call on_cmd_loop() on the next iteration, after updating the LED.
   } else {
     // Unknown command selector. We ignore it silently.
   }
