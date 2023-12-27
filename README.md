@@ -53,30 +53,15 @@ print(data)
 
 <br>
 
-## Flashing a RP2040 board.
-
-**TL;DR**; Use the BOOTSEL button flash your board with the corresponding .uf2 file from <https://github.com/zapta/i2c_adapter/tree/main/firmware/release>.
-
-### Step by step instructions
-
-1. Download the file .uf2 that corresponds to your board   <https://github.com/zapta/i2c_adapter/tree/main/firmware/release>
-1. **Press and hold the BOOTSEL button*** of the board, connect it to a computer using a USB cable, and then release the button.
-1. Confirm that the computer now has a new drive and that the Raspberry Pico LED is off.
-1. Copy the the .uf2 file you download to that drive.
-1. Confirm that the drive disappeared from your computer, and that the board's  LED blinks shortly every 2 seconds.
-1. Reconnect the board again to the computer (without pressing its BOOTSEL button), confirm that a new serial port appeared on your computer, and that the board's LED blinks shortly every 2 seconds.
-1. Your board is now a I2C Adapter and is ready to use.
-
-<br>
-
-## Connecting your board
+## Connecting your I2C Adapter
 
 ---
 **IMPORTANT**
 
-**Do not to exceed the I2C signals levels of your board.** For example, if your board can handle only 3.3V signals and you want to connect it to a 5V I2C device, you need to use a bidirectional I2C level shifter such as <https://www.adafruit.com/product/5649#technical-details>.
+**Do not to exceed the maximal voltage of your board. If needed,  use a bidirectional I2C level shifter such as <https://www.adafruit.com/product/5649#technical-details>.
 
 ---
+Flash your board with the corresponding firmware from  <https://github.com/zapta/i2c_adapter/tree/main/firmware/release> and connect according to the table below:
 
 | Board         | SDA |  SCL | Internal Pullups | Max Voltage |
 |--------------|-----------|------------|:------------:|---|
