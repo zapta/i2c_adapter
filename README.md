@@ -5,7 +5,7 @@ The I2C Adapter allows python programs to connect to I2C/QUIIC/STEMMA-QT devices
  This adapter is used for example by the [GreenPak driver](https://pypi.org/project/greenpak) to program Renesas GreenPak SPLD devices.
 
 <br>
-<img  src="www/wiring_diagram.svg"
+<img  src="www/wiring_diagram.png"
       style="display: block;margin-left: auto;margin-right: auto;width: 80%;" />
 <br>
 
