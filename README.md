@@ -1,11 +1,11 @@
 # A Simple USB to I2C Adapter
 
-The I2C Adapter allows python programs to connect to I2C devices using an off the shelf Raspberry Pico board. The Raspberry Pico appears on the computer as a serial port (no device installation needed) and acts as a USB to I2C bridge. The Python package *i2c_adapter* provides an easy to use API to interact with the I2C devices that are connected to the I2C Adapter. 
+The I2C Adapter allows python programs to connect to I2C/QUIIC/STEMMA-QT devices using off the shelf low cost boards such the Raspberry Pico or SparkFun Pro Micro - RP2040. The I2C adapter appears on the computer as a serial port (no device installation required) and acts as a USB to I2C bridge, and this Python package  provides an easy to use API to interact with it using high level commands. 
 
  This adapter is used for example by the [GreenPak driver](https://pypi.org/project/greenpak) to program Renesas GreenPak SPLD devices.
 
 <br>
-<img  src="www/wiring_example.png"  
+<img  src="xwww/wiring_example.png"  
       style="display: block;margin-left: auto;margin-right: auto;width: 60%;" />
 <br>
 
@@ -13,9 +13,9 @@ The I2C Adapter allows python programs to connect to I2C devices using an off th
 
 * Provides USB to I2C master functionality.
 * Supports Windows/Mac/Linux.
-* Uses a standard Raspberry Pico.
+* Support several low cost off-the-shelf boards.
 * Does not require driver installation (it appears on the computer as standard a serial port).
-* Comes with an easy to use Python AP.
+* Comes with an easy to use Python API.
 * Easy to modify/extend and to adapt to new hardware.
 
 <br>
@@ -52,52 +52,64 @@ print(data)
 
 <br>
 
-## Flashing the Raspberry Pico
+## Flashing a RP2040 board.
 
-**TL;DR**; Upload the file firmware.uf2 from the link below to the Raspberry Pico. It will now show up on your computer as a serial port and will act as a I2C Adapter.
+**TL;DR**; Use the BOOTSEL button flash your board with the corresponding .uf2 file from <https://github.com/zapta/i2c_adapter/tree/main/firmware/release>.
 
 ### Step by step instructions
 
-1. Download the file firmware.uf2 from here <https://github.com/zapta/i2c_adapter/tree/main/firmware/release>
-1. **Press and hold the BOOTSEL button*** of the Raspberry Pico, connect it to a computer using a USB cable, and then release the button.
+1. Download the file .uf2 that corresponds to your board   <https://github.com/zapta/i2c_adapter/tree/main/firmware/release>
+1. **Press and hold the BOOTSEL button*** of the board, connect it to a computer using a USB cable, and then release the button.
 1. Confirm that the computer now has a new drive and that the Raspberry Pico LED is off.
-1. Copy the firmware.uf2 file to that drive.
-1. Confirm that the drive disappeared from your computer, and that the Raspberry Pico LED blinks shortly every 2 seconds.
-1. Reconnect the Raspberry Pico again to the computer (without pressing its BOOTSEL button), and confirm that a new serial port appeared on your computer, and that the Raspberry Pico LED blinks shortly every 2 seconds.
-1. Your Raspberry Pico is now a I2C Adapter and is ready to use.
+1. Copy the the .uf2 file you download to that drive.
+1. Confirm that the drive disappeared from your computer, and that the board's  LED blinks shortly every 2 seconds.
+1. Reconnect the board again to the computer (without pressing its BOOTSEL button), confirm that a new serial port appeared on your computer, and that the board's LED blinks shortly every 2 seconds.
+1. Your board is now a I2C Adapter and is ready to use.
 
 <br>
 
-## Connecting the Raspberry Pico
+## Connecting your board
 
 ---
 **IMPORTANT**
 
-**The Raspberry Pico operates on 3.3V and is not 5V tolerant**. To connect to a 5V I2C device, use a bidirectional I2C level shifter such as <https://www.adafruit.com/product/5649#technical-details>.
+**Do not to exceed the I2C signals levels of your board.** For example, if your board can handle only 3.3V signals and you want to connect it to a 5V I2C device, you need to use a bidirectional I2C level shifter such as <https://www.adafruit.com/product/5649#technical-details>.
 
 ---
 
-| Signal         | Raspberry Pico Pin # | Description |
-|--------------|:-----------:|------------|
-| GND      | 3  |  Connect to the I2C device's GND.  This pin is nterchangeable with the other GND pins 8, 13, 18, 23, 28, 33, 38.   |
-| SDA| 4      | Connect to the I2C device's SDA. If the I2C device doesn't have a pullup resistor, connect a pullup resistor between SDA and 3.3V.    | 
-| SCL      | 5  | Connect to the I2C device's SCL. If the I2C device doesn't have a pullup resistor, connect a pullup resistor between SCL and 3.3V.       |
-| 3.3V Supply     | 38  | Optional. May be used to power the I2C device.    |
+| Board         | SDA |  SCL | Internal Pullups | Max Voltage |
+|--------------|-----------|------------|:------------:|---|
+| Raspberry Pico | GPIO4 | GPIO5 |  No|  3.3V |
+| Sparkfun Pro Micro RP2040 | Qwicc SDA | Qwicc SCL | 2.2K |  3.3V|
+| Adafruit KB2040 | Qwicc SDA | Qwicc SCL | No | 3.3V|
+| Adafruit QT Py RP2040 | Qwicc SDA | Qwicc SCL | No | 3.3V |
+
+
+
 
 <br>
 
 ## The wire protocol
 
-See comments in [firmware source code](https://github.com/zapta/i2c_adapter/blob/main/firmware/platformio/src/main.cpp).
+See comments in the [firmware source code](https://github.com/zapta/i2c_adapter/blob/main/firmware/platformio/src/main.cpp).
 
 <bre>
 
-## Firmware developement
+## For firmware developers
 
-1. Clone or download the repository to your computer.
-2. Install [Visual Studio Code](https://code.visualstudio.com/)
-3. In Visual Studio Code, install the plugin Platformio IDE.
-4. In Visual Studio Code, use *Menu | File | Open Folder* open the firmware/platformio direcory in your local repository.
-5. Wait until platformio will complete loading the necessary tools.
-6. Edit the code in firmware/platformio/src directory.
-7. Upload the modified firmware to your Raspberry Pico using the Platformio's Upload command (e.g use the '->' icon at the bottom).
+We use Visual Code Studion with the Platformio plug in to develope the firmware. Once you install both, clone this repository <https://github.com/zapta/i2c_adapter> on your machine and use the Menu | File | Open Folder option to open the firmware/platformio directory in the repository. Platformio take a few minutes do configure your environment and you will be able to edit/compile/upload code.
+
+## FAQ
+
+----
+**Q:** Can use board that is not RP2040 based?
+**A:** So far we are supporting RP2040 boards only because of the simplificy of flashing them by users. However, the firmware source code use general Arduino code that theoretically should compile also for other targets such as STM32 'blue pill' or Arduino UNO.  
+
+----
+**Q:** Can I use the I2C Adapter for commecial purposes.
+**A:** Of course, sharing or attributions are not required.
+
+----
+
+
+
