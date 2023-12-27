@@ -5,18 +5,19 @@ The I2C Adapter allows python programs to connect to I2C/QUIIC/STEMMA-QT devices
  This adapter is used for example by the [GreenPak driver](https://pypi.org/project/greenpak) to program Renesas GreenPak SPLD devices.
 
 <br>
-<img  src="xwww/wiring_example.png"  
-      style="display: block;margin-left: auto;margin-right: auto;width: 60%;" />
+<img  src="www/wiring_diagram.svg"
+      style="display: block;margin-left: auto;margin-right: auto;width: 80%;" />
 <br>
 
 ## Highlights
 
-* Provides USB to I2C master functionality.
+* Provides USB to I2C-master bridge.
 * Supports Windows/Mac/Linux.
-* Support several low cost off-the-shelf boards.
+* Uses low cost low cost off-the-shelf boards as adapters.
 * Does not require driver installation (it appears on the computer as standard a serial port).
 * Comes with an easy to use Python API.
 * Easy to modify/extend and to adapt to new hardware.
+* Permissive open source license. Comercial use OK, sharing and attribution not required. 
 
 <br>
 
@@ -97,19 +98,9 @@ See comments in the [firmware source code](https://github.com/zapta/i2c_adapter/
 
 ## For firmware developers
 
-We use Visual Code Studion with the Platformio plug in to develope the firmware. Once you install both, clone this repository <https://github.com/zapta/i2c_adapter> on your machine and use the Menu | File | Open Folder option to open the firmware/platformio directory in the repository. Platformio take a few minutes do configure your environment and you will be able to edit/compile/upload code.
+We use Visual Code Studion with the Platformio plug in to develope the firmware. Once you install both, clone this repository <https://github.com/zapta/i2c_adapter> on your machine and use the Menu | File | Open Folder option to open the firmware/platformio directory in the repository. Platformio take a few minutes do configure your environment and you will be able to edit/compile/upload code. Building firmware releases is done by running the Python script build_envs.py.
 
-## FAQ
 
-----
-**Q:** Can use board that is not RP2040 based?
-**A:** So far we are supporting RP2040 boards only because of the simplificy of flashing them by users. However, the firmware source code use general Arduino code that theoretically should compile also for other targets such as STM32 'blue pill' or Arduino UNO.  
-
-----
-**Q:** Can I use the I2C Adapter for commecial purposes.
-**A:** Of course, sharing or attributions are not required.
-
-----
 
 
 
