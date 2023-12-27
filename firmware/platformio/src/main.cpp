@@ -12,25 +12,61 @@ static constexpr uint16_t kFirmwareVersion = 1;
 // NOTE: Arduino Wire API documentation is here
 // https://www.arduino.cc/reference/en/language/functions/communication/wire/
 
+// --------------------- LED/NEOPIXEL Abstration begin.
+enum LedState {
+  // LED is off.
+  LED_OFF,
+  // LED is on during idle blinking.
+  LED_IDLE_BLINK_ON,
+  // LED is on while adapter is active.
+  LED_ACTIVE_ON
+};
+
+// Add abstracted LED/NEOPIXEL support in the form of two functions,
+// led_setup() and led_loop().
+#if defined(BOARD_NEO_PIXEL_PIN)
+#include <Adafruit_NeoPixel.h>
+
+static Adafruit_NeoPixel neopixel =
+    Adafruit_NeoPixel(1, BOARD_NEO_PIXEL_PIN, NEO_GRB + NEO_KHZ800);
+
+static void led_setup() {
+#if defined(BOARD_NEO_PWR_PIN)
+  // The Neo Pixel on the Adaftuit Py QT is power from a gpio pin.
+  pinMode(BOARD_NEO_PWR_PIN, OUTPUT);
+  digitalWrite(BOARD_NEO_PWR_PIN, 1);
+#endif
+  neopixel.begin();
+  neopixel.show();
+}
+
+static void led_loop(LedState led_state) {
+  const uint32_t color = led_state == LED_OFF             ? 0x000000
+                         : led_state == LED_IDLE_BLINK_ON ? 0x007700
+                         : led_state == LED_ACTIVE_ON     ? 0x777700
+                                                          : 0x000077;
+  neopixel.setPixelColor(0, color);
+  neopixel.show();
+}
+#elif defined(BOARD_LED_PIN)
+static void led_setup() { pinMode(BOARD_LED_PIN, OUTPUT); }
+static void led_loop(LedState led_state) {
+  digitalWrite(BOARD_LED_PIN, led_state != LED_OFF);
+}
+#else
+#error "Should define BOARD_NEO_PIXEL_PIN or BOARD_LED_PIN"
+#endif
+// --------------------- LED/NEOPIXEL Abstration end.
+
 // All command bytes must arrive within this time period.
 static constexpr uint32_t kCommandTimeoutMillis = 250;
 
+// A temporary buffer for commands and I2C operations.
 static uint8_t data_buffer[512];
 
 // Defining our own Wire object allows us to select the
 // I2C hardware channel and pins to use.
 static TwoWire i2c(BOARD_SDA_PIN, BOARD_SCL_PIN);
-
-enum LedState { LED_OFF, LED_IDLE_BLINK_ON, LED_ACTIVE_ON };
-
-// Simple LED support.
-#if defined(BOARD_LED_PIN)
-static void led_setup() { pinMode(BOARD_LED_PIN, OUTPUT); }
-
-static void led_loop(LedState led_state) {
-  digitalWrite(BOARD_LED_PIN, led_state != LED_OFF);
-}
-#endif
 
 // A simple timer.
 // Cveate: overflows 50 days after last reset().
