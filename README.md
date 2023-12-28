@@ -65,7 +65,7 @@ Flash your board with the corresponding firmware from  <https://github.com/zapta
 
 | Board         | SDA |  SCL | Internal Pullups | Max Voltage |
 |--------------|-----------|------------|:------------:|---|
-| Raspberry Pico | GPIO4 | GPIO5 |  No|  3.3V |
+| Raspberry Pico | GP4 | GP5 |  No|  3.3V |
 | Sparkfun Pro Micro RP2040 | Qwicc SDA | Qwicc SCL | 2.2K |  3.3V|
 | Adafruit KB2040 | Qwicc SDA | Qwicc SCL | No | 3.3V|
 | Adafruit QT Py RP2040 | Qwicc SDA | Qwicc SCL | No | 3.3V |
