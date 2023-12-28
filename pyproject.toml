@@ -10,11 +10,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "i2c_adapter"
-version = "0.2.01"
+version = "0.2.02"
 authors = [
   { name="Zapta", email="zapta@zapta.com" },
 ]
-description = "An easy to use USB to I2C adapter using a Raspberry Pico."
+description = "An easy to use USB to I2C adapter using a Raspberry Pico or similar boards."
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
