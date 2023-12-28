@@ -11,6 +11,10 @@ using board::led;
 static constexpr uint8_t kApiVersion = 1;
 static constexpr uint16_t kFirmwareVersion = 1;
 
+// Arduino libraries seems to be limited to 256 bytes per read or write
+// operation so we limit it here.
+static constexpr uint16_t kMaxReadWriteBytes = 256;
+
 // TODO: Add support for pullup control.
 // TODO: Add support for debug info using an auxilary UART.
 
@@ -21,7 +25,7 @@ static constexpr uint16_t kFirmwareVersion = 1;
 static constexpr uint32_t kCommandTimeoutMillis = 250;
 
 // A temporary buffer for commands and I2C operations.
-static uint8_t data_buffer[512];
+static uint8_t data_buffer[kMaxReadWriteBytes];
 
 // A simple timer.
 // Cveate: overflows 50 days after last reset().
@@ -50,7 +54,7 @@ static bool read_serial_bytes(uint8_t* bfr, uint16_t n) {
   }
 
   // TODO: Verify actual read == n;
-  size_t actual_read = Serial.readBytes(bfr, n);
+  size_t actual_read = Serial.readBytes((char*)bfr, n);
   (void)actual_read;
   return true;
 }
@@ -123,7 +127,7 @@ static class InfoCommandHandler : public CommandHandler {
 // - byte 0:    'w'
 // - byte 1:    Device's I2C address in the range 0-127.
 // - byte 2,3:  Number bytes to write. Big endian. Should be in the
-//              range 1 to 512.
+//              range 0 to kMaxReadWriteBytes.
 // - Byte 4...  The data bytes to write.
 //
 // Error response:
@@ -164,7 +168,7 @@ static class WriteCommandHandler : public CommandHandler {
     }
 
     // Validate the command header.
-    uint8_t status = (_device_addr > 127) ? 0x08 : (_count > 512) ? 0x09 : 0x00;
+    uint8_t status = (_device_addr > 127) ? 0x08 : (_count > kMaxReadWriteBytes) ? 0x09 : 0x00;
     if (status != 0x00) {
       Serial.write('E');
       Serial.write(status);
@@ -172,7 +176,7 @@ static class WriteCommandHandler : public CommandHandler {
     }
 
     // Read the data bytes
-    static_assert(sizeof(data_buffer) >= 512);
+    static_assert(sizeof(data_buffer) >= kMaxReadWriteBytes);
     if (!read_serial_bytes(data_buffer, _count)) {
       return false;
     }
@@ -207,7 +211,7 @@ static class WriteCommandHandler : public CommandHandler {
 // - byte 0:    'r'
 // - byte 1:    Device's I2C address in the range 0-127.
 // - byte 2,3:  Number bytes to read. Big endian. Should be in the
-//              range 1 to 512.
+//              range 0 to kMaxReadWriteBytes.
 //
 // Error  Response:
 // - byte 0:    'E' for 'error'.
@@ -240,7 +244,7 @@ static class ReadCommandHandler : public CommandHandler {
     // Sanity check the command
     const uint8_t device_addr = data_buffer[0];
     const uint16_t count = (((uint16_t)data_buffer[1]) << 8) + data_buffer[2];
-    uint8_t status = (device_addr > 127) ? 0x08 : (count > 512) ? 0x09 : 0x00;
+    uint8_t status = (device_addr > 127) ? 0x08 : (count > kMaxReadWriteBytes) ? 0x09 : 0x00;
     if (status != 0x00) {
       Serial.write('E');
       Serial.write(status);
