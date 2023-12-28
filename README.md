@@ -34,7 +34,7 @@ In the example below, we use an I2C Adapter that appears as serial port "COM7" t
 ```python
 from i2c_adapter import I2cAdapter
 
-i2c = i2c.I2cAdapter(port="COM7")
+i2c = I2cAdapter(port="COM7")
 i2c_addr = 0x08
 assert i2c.write(i2c_addr, bytearray([0]))
 data = i2c.read(i2c_addr,  20)
