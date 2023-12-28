@@ -1,1 +1,1 @@
-pyserial
+i2c-adapter
