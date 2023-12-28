@@ -1,0 +1,4 @@
+
+* Add a python function to scan the bus and identify responsive addresses.
+* Add a python method to control the I2C speed.
+

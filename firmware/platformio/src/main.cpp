@@ -295,7 +295,7 @@ void setup() {
   // USB serial.
   Serial.begin(115200);
 
-  i2c.setClock(100000);   // 100Khz.
+  i2c.setClock(400000);   // 400Khz.
   i2c.setTimeout(50000);  // 50ms timeout.
   i2c.begin();
 }

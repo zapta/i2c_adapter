@@ -1,3 +1,5 @@
+#!python
+
 # Build the platformio targets and copy their firmware images to ../release.
 
 import subprocess
@@ -14,7 +16,8 @@ import glob
 # TODO: Add a command flag for verbose build.
 
 # Path to the platformio command.
-pio = os.path.join(os.path.expanduser("~user"), ".platformio/penv/bin/pio")
+bin_dir = "Scripts" if os.name == 'nt' else "bin"
+pio = os.path.join(os.path.expanduser("~user"), f".platformio/penv/{bin_dir}/pio")
 
 
 def get_platformio_envs() -> List[str]:
