@@ -54,7 +54,7 @@ class I2cAdapter:
         assert isinstance(device_address, int)
         assert 0 <= device_address <= 127
         assert isinstance(data, bytearray) or isinstance(data, bytes)
-        assert 0 < len(data) <= 256
+        assert 0 <= len(data) <= 256
 
         # Construct and send the command request.
         req = bytearray()
@@ -99,7 +99,7 @@ class I2cAdapter:
         assert isinstance(device_address, int)
         assert 0 <= device_address <= 127
         assert isinstance(byte_count, int)
-        assert 0 < byte_count <= 256
+        assert 0 <= byte_count <= 256
 
         # Construct and send the command request.
         req = bytearray()
