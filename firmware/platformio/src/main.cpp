@@ -15,7 +15,6 @@ static constexpr uint16_t kFirmwareVersion = 1;
 // operation so we limit it here.
 static constexpr uint16_t kMaxReadWriteBytes = 256;
 
-// TODO: Add support for pullup control.
 // TODO: Add support for debug info using an auxilary UART.
 
 // NOTE: Arduino Wire API documentation is here
@@ -23,6 +22,10 @@ static constexpr uint16_t kMaxReadWriteBytes = 256;
 
 // All command bytes must arrive within this time period.
 static constexpr uint32_t kCommandTimeoutMillis = 250;
+
+// Since LED updates may involved neopixel communication, we minimize
+// it by filtering the 'no-change' updates.
+static LedState last_led_state;
 
 // A temporary buffer for commands and I2C operations.
 static uint8_t data_buffer[kMaxReadWriteBytes];
@@ -168,7 +171,9 @@ static class WriteCommandHandler : public CommandHandler {
     }
 
     // Validate the command header.
-    uint8_t status = (_device_addr > 127) ? 0x08 : (_count > kMaxReadWriteBytes) ? 0x09 : 0x00;
+    uint8_t status = (_device_addr > 127)            ? 0x08
+                     : (_count > kMaxReadWriteBytes) ? 0x09
+                                                     : 0x00;
     if (status != 0x00) {
       Serial.write('E');
       Serial.write(status);
@@ -244,7 +249,9 @@ static class ReadCommandHandler : public CommandHandler {
     // Sanity check the command
     const uint8_t device_addr = data_buffer[0];
     const uint16_t count = (((uint16_t)data_buffer[1]) << 8) + data_buffer[2];
-    uint8_t status = (device_addr > 127) ? 0x08 : (count > kMaxReadWriteBytes) ? 0x09 : 0x00;
+    uint8_t status = (device_addr > 127)            ? 0x08
+                     : (count > kMaxReadWriteBytes) ? 0x09
+                                                    : 0x00;
     if (status != 0x00) {
       Serial.write('E');
       Serial.write(status);
@@ -295,6 +302,8 @@ static CommandHandler* find_command_handler_by_char(const char cmd_char) {
 
 void setup() {
   board::setup();
+  board::led.update(LED_OFF);
+  last_led_state = LED_OFF;
 
   // USB serial.
   Serial.begin(115200);
@@ -315,11 +324,14 @@ void loop() {
   // Update LED state.
   {
     const bool is_active = current_cmd || millis_since_cmd_start < 200;
-    const LedState led_state = is_active ? LED_ACTIVE_ON
-                               : (millis_since_cmd_start & 0b11111111100) == 0
-                                   ? LED_IDLE_BLINK_ON
-                                   : LED_OFF;
-    led.update(led_state);
+    const LedState new_led_state =
+        is_active                                       ? LED_ACTIVE_ON
+        : (millis_since_cmd_start & 0b11111111100) == 0 ? LED_IDLE_BLINK_ON
+                                                        : LED_OFF;
+    if (new_led_state != last_led_state) {
+      led.update(new_led_state);
+      last_led_state = new_led_state;
+    }
   }
 
   // If a command is in progress, handle it.
