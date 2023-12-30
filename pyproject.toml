@@ -10,7 +10,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "i2c_adapter"
-version = "0.02.04"
+version = "0.02.05"
 authors = [
   { name="Zapta", email="zapta@zapta.com" },
 ]

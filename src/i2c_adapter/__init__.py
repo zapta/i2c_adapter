@@ -70,7 +70,7 @@ class I2cAdapter:
 
         # Read the status flag.
         resp = self.__serial.read(1)
-        assert isinstance(data, bytearray), type(data)
+        assert isinstance(resp, bytes), type(resp)
         if len(resp) != 1:
             print(f"I2C write: status read mismatch, expected {1}, got {len(resp)}")
             return False
