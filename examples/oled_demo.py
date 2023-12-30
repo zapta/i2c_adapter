@@ -5,10 +5,13 @@
 # SH1106 display.
 
 import time
+import datetime
 
 from i2c_adapter import I2cAdapter
 from luma.oled.device import sh1106
 from luma.core.render import canvas
+from PIL import ImageFont, ImageColor
+from pathlib import Path
 
 
 # Related readings
@@ -17,6 +20,7 @@ from luma.core.render import canvas
 # - https://github.com/rm-hull/luma.examples/blob/master/examples/sys_info.py
 # - https://github.com/rm-hull/luma.examples/tree/master/examples
 # - https://luma-oled.readthedocs.io/en/latest/
+# - https://stackoverflow.com/questions/64189757/add-element-to-oled-display-via-pil-python-without-erasing-rest
 
 
 # Customize for your system.
@@ -55,15 +59,21 @@ class MyLumaSerial:
 
 luma_serial = MyLumaSerial(my_port, addr=my_oled_addr, cmd_mode=0x00, data_mode=0x40)
 luma_device = sh1106(luma_serial, width=128, height=64, rotate=0)
+# luma_device.persist = True  # Do not clear display on exit
 
-i = 0
+
+font1 = ImageFont.truetype("./fonts/FreePixel.ttf", 16)
+font2 = ImageFont.truetype("./fonts/OLED.otf", 12)
+white = ImageColor.getcolor("white", "1")
+black = ImageColor.getcolor("black", "1")
+
 while True:
+    time_str = "{0:%H:%M:%S}".format(datetime.datetime.now())
+    print(f"Drawing {time_str}", flush=True)
     # The canvas is drawn from scratch and is sent in its entirety to the display
     # upon exiting the 'with' clause.
     with canvas(luma_device) as luma_canvas:
-        print(f"Drawing {i}", flush=True)
-        # luma_canvas.rectangle(oled.bounding_box, outline="white", fill="black")
-        # luma_canvas.text((19, 15), f"Hello  I2C Adapter", fill="white")
-        luma_canvas.text((47, 42), f"{i:05d}", fill="white")
-    i += 1
+        luma_canvas.rectangle(luma_device.bounding_box, outline=white, fill=black)
+        luma_canvas.text((20, 14), f"I2C Adapter", fill=white, font=font1)
+        luma_canvas.text((33, 40), f"{time_str}", fill=white, font=font2)
     time.sleep(1.0)
