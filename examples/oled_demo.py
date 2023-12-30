@@ -13,6 +13,7 @@ from typing import List
 # https://github.com/rm-hull/luma.core/blob/master/luma/core/interface/serial.py#L25
 # https://github.com/rm-hull/luma.examples/tree/master/examples
 # https://github.com/rm-hull/luma.examples/blob/master/examples/sys_info.py
+# https://buildmedia.readthedocs.org/media/pdf/luma-oled/rtd-update/luma-oled.pdf
 
 # OLED display I2C address.
 addr = 0x3c
@@ -75,6 +76,7 @@ with canvas(device) as c:
     while True:
       print(f"Drawing {i}", flush=True)
       c.rectangle(device.bounding_box, outline="white", fill="black")
+      c.text((30, 40), "Hello", fill="white")
       i += 1
       time.sleep(1.0)
     
