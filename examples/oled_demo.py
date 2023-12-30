@@ -72,8 +72,8 @@ while True:
     print(f"Drawing {time_str}", flush=True)
     # The canvas is drawn from scratch and is sent in its entirety to the display
     # upon exiting the 'with' clause.
-    with canvas(luma_device) as luma_canvas:
-        luma_canvas.rectangle(luma_device.bounding_box, outline=white, fill=black)
-        luma_canvas.text((20, 14), f"I2C Adapter", fill=white, font=font1)
-        luma_canvas.text((33, 40), f"{time_str}", fill=white, font=font2)
+    with canvas(luma_device) as draw:
+        draw.rectangle(luma_device.bounding_box, outline=white, fill=black)
+        draw.text((20, 14), f"I2C Adapter", fill=white, font=font1)
+        draw.text((33, 40), f"{time_str}", fill=white, font=font2)
     time.sleep(1.0)
