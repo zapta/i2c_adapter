@@ -52,8 +52,8 @@ i = 0
 while True:
     with canvas(oled) as draw:
         print(f"Drawing {i}", flush=True)
-        draw.rectangle(oled.bounding_box, outline="white", fill="black")
-        draw.text((19, 15), f"Hello  I2C Adapter", fill="white")
+        # draw.rectangle(oled.bounding_box, outline="white", fill="black")
+        # draw.text((19, 15), f"Hello  I2C Adapter", fill="white")
         draw.text((47, 42), f"{i:05d}", fill="white")
     i += 1
     time.sleep(1.0)
