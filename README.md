@@ -2,12 +2,15 @@
 
 The I2C Adapter allows python programs to connect to I2C/QUIIC/STEMMA-QT devices using off the shelf low cost boards such the Raspberry Pico or SparkFun Pro Micro - RP2040. The I2C adapter appears on the computer as a serial port (no device installation required) and acts as a USB to I2C bridge, and this Python package  provides an easy to use API to interact with it using high level commands. 
 
- This adapter is used for example by the [GreenPak driver](https://pypi.org/project/greenpak) to program Renesas GreenPak SPLD devices.
+
+For example, the schematic below shows the wiring for the [oled_demo.py](https://github.com/zapta/i2c_adapter/blob/main/examples/oled_demo.py) example where the I2C Adapter is used draw on a SH1106 OLED display using the Luma package.
 
 <br>
 <img  src="https://raw.githubusercontent.com/zapta/i2c_adapter/main/www/wiring_diagram.png"
       style="display: block;margin-left: auto;margin-right: auto;width: 80%;" />
 <br>
+
+
 
 ## Highlights
 
@@ -41,6 +44,17 @@ data = i2c.read(i2c_addr,  20)
 print(data)
 ```
 
+In the example below we scan the I2C bus address range 0x00 to 0x7f and look for devices that response to an empty write.
+```python
+from i2c_adapter import I2cAdapter
+
+i2c = I2cAdapter(port="COM18")
+print(f"Scanning I2C bus 0x00 to 0x7f:")
+for adr in range(0, 127):
+    if i2c.write(adr, bytearray([0]), silent=True):
+      print(f"  - Device at 0x{adr:02x}")
+```
+
 <br>
 
 ## LED Status
@@ -63,12 +77,12 @@ print(data)
 ---
 Flash your board with the corresponding firmware from  <https://github.com/zapta/i2c_adapter/tree/main/firmware/release> and connect according to the table below:
 
-| Board         | SDA |  SCL | Internal Pullups | Max Voltage |
+|          | SDA |  SCL | Internal Pullups | Max Voltage |
 |--------------|-----------|------------|:------------:|---|
-| Raspberry Pico | GP4 | GP5 |  No|  3.3V |
-| Sparkfun Pro Micro RP2040 | Qwicc SDA | Qwicc SCL | 2.2K |  3.3V|
-| Adafruit KB2040 | Qwicc SDA | Qwicc SCL | No | 3.3V|
-| Adafruit QT Py RP2040 | Qwicc SDA | Qwicc SCL | No | 3.3V |
+| **Raspberry Pico** | GP4 | GP5 |  No|  3.3V |
+| **Sparkfun Pro Micro RP2040** | Qwicc SDA | Qwicc SCL | 2.2K |  3.3V|
+| **Adafruit KB2040** | Qwicc SDA | Qwicc SCL | No | 3.3V|
+| **Adafruit QT Py RP2040** | Qwicc SDA | Qwicc SCL | No | 3.3V |
 
 
 
