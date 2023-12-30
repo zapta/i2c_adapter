@@ -72,7 +72,7 @@ for adr in range(0, 127):
 ---
 **IMPORTANT**
 
-**Do not to exceed the maximal voltage of your board. If needed,  use a bidirectional I2C level shifter such as <https://www.adafruit.com/product/5649#technical-details>.
+**Do not to exceed the maximal voltage of your board. If needed,  use a bidirectional I2C level shifter such as <https://www.adafruit.com/product/5649>.
 
 ---
 Flash your board with the corresponding firmware from  <https://github.com/zapta/i2c_adapter/tree/main/firmware/release> and connect according to the table below:
