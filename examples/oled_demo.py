@@ -11,7 +11,6 @@ from i2c_adapter import I2cAdapter
 from luma.oled.device import sh1106
 from luma.core.render import canvas
 from PIL import ImageFont, ImageColor
-from pathlib import Path
 
 
 # Related readings
@@ -76,4 +75,6 @@ while True:
         draw.rectangle(luma_device.bounding_box, outline=white, fill=black)
         draw.text((20, 14), f"I2C Adapter", fill=white, font=font1)
         draw.text((33, 40), f"{time_str}", fill=white, font=font2)
+        # Uncomment to save screenshot.
+        # draw._image.save("oled_demo_screenshot.png")
     time.sleep(1.0)
