@@ -3,12 +3,15 @@
 from luma.oled.device import sh1106
 from luma.core.render import canvas
 import time
+import sys
 
 
 t0 = time.time()
 
+
 def ts():
     return f"[{time.time() - t0:6.3f}]"
+
 
 class MyDummySerial:
     def __init__(self):
@@ -28,9 +31,8 @@ class MyDummySerial:
 my_dummy_serial = MyDummySerial()
 device = sh1106(my_dummy_serial, width=128, height=64, rotate=0)
 
-with canvas(device) as c:
-    for i in range(10):
-        print(f"{ts()} Drawing {i}", flush=True)
-        c.rectangle(device.bounding_box, outline="white", fill="black")
-        c.text((30, 40), "Hello", fill="white")
-        time.sleep(0.5)
+for i in range(10):
+    with canvas(device) as c:
+        print(f"{ts()} ------ Drawing {i}", flush=True)
+        c.text((30, 40), f"hello {i}", fill="white")
+    time.sleep(0.5)
