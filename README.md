@@ -3,7 +3,7 @@
 The I2C Adapter allows python programs to connect to I2C/QUIIC/STEMMA-QT devices using off the shelf low cost boards such the Raspberry Pico or SparkFun Pro Micro - RP2040. The I2C adapter appears on the computer as a serial port (no device installation required) and acts as a USB to I2C bridge, and this Python package  provides an easy to use API to interact with it using high level commands. 
 
 
-For example, the schematic below shows the wiring for the [oled_demo.py](https://github.com/zapta/i2c_adapter/blob/main/examples/oled_demo.py) example where the I2C Adapter is used draw on a SH1106 OLED display using the Luma package.
+For example, the schematic below shows the wiring for the [oled_demo.py](https://github.com/zapta/i2c_adapter/blob/main/examples/oled_demo.py) example which drive an I2C OLED display using an I2C Adapter and the luma.oled python package.
 
 <br>
 <img  src="https://raw.githubusercontent.com/zapta/i2c_adapter/main/www/wiring_diagram.png"
