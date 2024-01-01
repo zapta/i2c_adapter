@@ -8,10 +8,10 @@ import time
 class I2cAdapter:
     def __init__(self, port: str):
         self.__serial: Serial = Serial(port, timeout=1.0)
-        if not self.test_connection_to_driver():
+        if not self.test_connection():
             raise RuntimeError(f"i2c driver not detected at port {port}")
 
-    def test_connection_to_driver(self, max_tries: int = 3) -> bool:
+    def test_connection(self, max_tries: int = 3) -> bool:
         """Use the ECHO command to test if the driver is connected to the host.
         This does not test the connection between the driver and the I2C device.
         Return True is the driver is responsive.
