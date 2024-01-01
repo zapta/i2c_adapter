@@ -105,7 +105,7 @@ API Reference
 
 |
 
-Wire Protocol
+The Wire Protocol
 =============
 
 TBD
