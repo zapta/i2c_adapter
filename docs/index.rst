@@ -3,6 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. See rst cheat sheet at 
+   https://docs.anaconda.com/restructuredtext/index.html
+
 Overview
 ========
 The I2C Adpater project allows to use off-the-shelf and inexpensive boards as USB to I2C bridge
@@ -19,7 +22,8 @@ using pip:
 
 Examples
 ========
-Write and read I2C device 0x08 using the I2C Adapter at serial port COM7: 
+
+Write and read I2C device 0x08 with the I2C Adapter at serial port COM7:
 
 .. code-block:: python
   :linenos:
