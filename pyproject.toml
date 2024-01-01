@@ -10,7 +10,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "i2c_adapter"
-version = "0.02.07"
+version = "0.02.09"
 authors = [
   { name="Zapta", email="zapta@zapta.com" },
 ]
@@ -43,5 +43,6 @@ exclude = [
 
 [project.urls]
 "Homepage" = "https://github.com/zapta/i2c_adapter"
+"Documentation" = "https://i2c-adapter.readthedocs.io/en/latest"
 "Bug Tracker" = "https://github.com/zapta/i2c_adapter/issues"
 
