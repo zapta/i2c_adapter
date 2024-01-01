@@ -9,8 +9,8 @@ class SimpleLed : public Led {
  public:
   SimpleLed(int pin) : _pin(pin) { pinMode(_pin, OUTPUT); };
 
-  virtual void update(LedState led_state) override {
-    digitalWrite(_pin, led_state != LED_OFF);
+  virtual void update(bool led_state) override {
+    digitalWrite(_pin, led_state);
   }
 
  private:
@@ -23,11 +23,8 @@ class NeoPixelLed : public Led {
   NeoPixelLed(int pin) : _neopixel(1, pin, NEO_GRB + NEO_KHZ800) {
     _neopixel.begin();
   };
-  virtual void update(LedState led_state) override {
-    const uint32_t color = led_state == LED_OFF             ? 0x000000  // Black
-                           : led_state == LED_IDLE_BLINK_ON ? 0x007700  // Green
-                           : led_state == LED_ACTIVE_ON ? 0x777700   // Yellow
-                                                        : 0x000077;  // Blue
+  virtual void update(bool led_state) override {
+    const uint32_t color = led_state ? 0x001100 : 0x000000;
     _neopixel.setPixelColor(0, color);
     _neopixel.show();
   }

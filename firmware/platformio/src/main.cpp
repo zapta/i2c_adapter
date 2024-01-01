@@ -25,7 +25,7 @@ static constexpr uint32_t kCommandTimeoutMillis = 250;
 
 // Since LED updates may involved neopixel communication, we minimize
 // it by filtering the 'no-change' updates.
-static LedState last_led_state;
+static bool last_led_state;
 
 // A temporary buffer for commands and I2C operations.
 static uint8_t data_buffer[kMaxReadWriteBytes];
@@ -302,8 +302,8 @@ static CommandHandler* find_command_handler_by_char(const char cmd_char) {
 
 void setup() {
   board::setup();
-  board::led.update(LED_OFF);
-  last_led_state = LED_OFF;
+  board::led.update(false);
+  last_led_state = false;
 
   // USB serial.
   Serial.begin(115200);
@@ -321,13 +321,10 @@ void loop() {
   const uint32_t millis_now = millis();
   const uint32_t millis_since_cmd_start = cmd_timer.elapsed_millis(millis_now);
 
-  // Update LED state.
+  // Update LED state. Solid if active or short blinks if idle.
   {
     const bool is_active = current_cmd || millis_since_cmd_start < 200;
-    const LedState new_led_state =
-        is_active                                       ? LED_ACTIVE_ON
-        : (millis_since_cmd_start & 0b11111111100) == 0 ? LED_IDLE_BLINK_ON
-                                                        : LED_OFF;
+    const bool new_led_state = is_active  ||  (millis_since_cmd_start & 0b11111111100) == 0;
     if (new_led_state != last_led_state) {
       led.update(new_led_state);
       last_led_state = new_led_state;

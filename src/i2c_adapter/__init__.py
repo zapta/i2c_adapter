@@ -45,10 +45,9 @@ class I2cAdapter:
         assert isinstance(resp, bytes), type(resp)
         assert len(resp) == 1
         return resp[0] == b
-      
 
     def write(self, device_address: int, data: bytearray | bytes, silent=False) -> bool:
-        """Write data to an I2C device, return True if ok. 
+        """Write data to an I2C device, return True if ok.
         If silent, be silent for I2C error, but not for adapter errors.
         """
         assert isinstance(device_address, int)
@@ -61,38 +60,46 @@ class I2cAdapter:
         req.append(ord("w"))
         req.append(device_address)
         req.append(len(data) // 256)  # Count MSB
-        req.append(len(data) % 256)   # Count LSB
+        req.append(len(data) % 256)  # Count LSB
         req.extend(data)
         n = self.__serial.write(req)
         if n != len(req):
-            print(f"I2C write: write mismatch, expected {len(req)}, got {n}")
+            print(
+                f"I2C write: write mismatch, expected {len(req)}, got {n}", flush=True
+            )
             return False
 
         # Read the status flag.
         resp = self.__serial.read(1)
         assert isinstance(resp, bytes), type(resp)
         if len(resp) != 1:
-            print(f"I2C write: status read mismatch, expected {1}, got {len(resp)}")
+            print(
+                f"I2C write: status read mismatch, expected {1}, got {len(resp)}",
+                flush=True,
+            )
             return False
         if resp[0] not in (ord("E"), ord("K")):
-            print(f"I2C write: unexpected status in response: {resp}")
+            print(f"I2C write: unexpected status in response: {resp}", flush=True)
             return False
         if resp[0] == ord("K"):
             return True
 
         # Read the extra info status byte.
         resp = self.__serial.read(1)
-        assert isinstance(data, bytearray), type(data)
+        assert isinstance(resp, bytes), type(resp)
         if len(resp) != 1:
             print(
-                f"I2C write: extra status read mismatch, expected {1}, got {len(resp)}"
+                f"I2C write: extra status read mismatch, expected {1}, got {len(resp)}",
+                flush=True,
             )
             return False
         if not silent:
-            print(f"I2C write: failed with status = {resp[0]:02x}")
+            print(f"I2C write: failed with status = {resp[0]:02x}", flush=True)
         return False
 
-    def read(self, device_address: int, byte_count: int, silent=False) -> Optional[bytearray]:
+    def read(
+        self, device_address: int, byte_count: int, silent=False
+    ) -> Optional[bytearray]:
         """Read a given number of bytes from an I1C device. Returns the bytes or None if error.
         If silent, be silent for I2C error, but not for adapter errors.
         """
@@ -109,18 +116,21 @@ class I2cAdapter:
         req.append(byte_count % 256)
         n = self.__serial.write(req)
         if n != len(req):
-            print(f"I2C read: write mismatch, expected {len(req)}, got {n}")
+            print(f"I2C read: write mismatch, expected {len(req)}, got {n}", flush=True)
             return None
 
         # Read status flag.
         resp = self.__serial.read(1)
         assert isinstance(resp, bytes), type(resp)
         if len(resp) != 1:
-            print(f"I2C read: status flag read mismatch, expected {1}, got {len(resp)}")
+            print(
+                f"I2C read: status flag read mismatch, expected {1}, got {len(resp)}",
+                flush=True,
+            )
             return None
         status_flag = resp[0]
         if status_flag not in (ord("E"), ord("K")):
-            print(f"I2C read: unexpected status flag in response: {resp}")
+            print(f"I2C read: unexpected status flag in response: {resp}", flush=True)
             return None
 
         # Handle the case of an error
@@ -130,11 +140,12 @@ class I2cAdapter:
             assert isinstance(resp, bytes), type(resp)
             if len(resp) != 1:
                 print(
-                    f"I2C read: error info read mismatch, expected {1}, got {len(resp)}"
+                    f"I2C read: error info read mismatch, expected {1}, got {len(resp)}",
+                    flush=True,
                 )
                 return None
             if not slient:
-                print(f"I2C read: failed with status = {resp[1]:02x}")
+                print(f"I2C read: failed with status = {resp[1]:02x}", flush=True)
             return None
 
         # Handle the OK case.
@@ -143,12 +154,16 @@ class I2cAdapter:
         resp = self.__serial.read(2)
         assert isinstance(resp, bytes), type(resp)
         if len(resp) != 2:
-            print(f"I2C read: error count read mismatch, expected {2}, got {len(resp)}")
+            print(
+                f"I2C read: error count read mismatch, expected {2}, got {len(resp)}",
+                flush=True,
+            )
             return None
         resp_count = (resp[0] << 8) + resp[1]
         if resp_count != byte_count:
             print(
-                f"I2C read: response count mismatch, expected {byte_count}, got {resp_count}"
+                f"I2C read: response count mismatch, expected {byte_count}, got {resp_count}",
+                flush=True,
             )
             return None
 
@@ -157,7 +172,8 @@ class I2cAdapter:
         assert isinstance(resp, bytes), type(resp)
         if len(resp) != byte_count:
             print(
-                f"I2C read: data read mismatch, expected {byte_count}, got {len(resp)}"
+                f"I2C read: data read mismatch, expected {byte_count}, got {len(resp)}",
+                flush=True,
             )
             return None
         return bytearray(resp)
