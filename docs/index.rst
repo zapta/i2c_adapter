@@ -71,11 +71,11 @@ instructions with the corresponding I2C Adpter firmware from https://github.com/
 +===============================+===========+============+==========+=========+
 | **Raspberry Pico**            | GP4       | GP5        |  No      |  3.3V   |
 +-------------------------------+-----------+------------+----------+---------+
-| **Sparkfun Pro Micro RP2040** | Qwicc SDA | Qwicc SCL  | 2.2K     |  3.3V   |
+| **Sparkfun Pro Micro RP2040** | Qwiic SDA | Qwiic SCL  | 2.2K     |  3.3V   |
 +-------------------------------+-----------+------------+----------+---------+
-| **Adafruit KB2040**           | Qwicc SDA | Qwicc SCL  | No       |  3.3V   |
+| **Adafruit KB2040**           | Qwiic SDA | Qwiic SCL  | No       |  3.3V   |
 +-------------------------------+-----------+------------+----------+---------+
-| **Adafruit QT Py RP2040**     | Qwicc SDA | Qwicc SCL  | No       |  3.3V   |
+| **Adafruit QT Py RP2040**     | Qwiic SDA | Qwiic SCL  | No       |  3.3V   |
 +-------------------------------+-----------+------------+----------+---------+
 
 |
