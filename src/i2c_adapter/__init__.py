@@ -1,4 +1,4 @@
-"""This package provides a an easy to use Python API for accessing I2C
+"""The i2c_adapter provides a an easy to use Python API for accessing I2C
  devices using an I2C Adapter compatible board."""
 
 from typing import Optional, List, Tuple
@@ -7,9 +7,20 @@ import time
 
 
 class I2cAdapter:
-    """Provides access to a single I2C Adapter board."""
+    """This class provides the Python API of the I2C Adapter."""
 
     def __init__(self, port: str):
+        """Connect to the I2C Adapter board.
+
+        Initializes this instance and tries to connect to an I2C Adapter
+        at the specified serial port. The constructor asserts that the I2C
+        Adapter was indeed found.
+
+        :param port: The serial port of the I2C Adapter to connect. The format of
+                the port string is operating system dependent and may look like "COM7" on
+                windows, "/dev/tty.usbmodem1101" on Mac, and  "/dev/ttyUSB0" on Linux. If
+        :type port: str
+        """
         self.__serial: Serial = Serial(port, timeout=1.0)
         if not self.test_connection():
             raise RuntimeError(f"i2c driver not detected at port {port}")
@@ -17,8 +28,29 @@ class I2cAdapter:
     def read(
         self, device_address: int, byte_count: int, silent=False
     ) -> Optional[bytearray]:
-        """Read a given number of bytes from an I1C device. Returns the bytes or None if error.
-        If silent, be silent for I2C error, but not for adapter errors.
+        """Read N bytes from an I2C device.
+
+        Performs an I2C start/read/stop transaction with the specified device.
+
+        :param device_address: The I2C address of the device to read from. This
+            value must be in the range [0, 0x7f]
+        :type device_address: int
+
+        :param byte_count: The number of bytes to read, must be in the range
+            [0, 256]. If the count is 0, the adapter still performs a read
+            transaction but reads zero bytes. This is useful when scanning the
+            I2C bus for devices
+        :type byte_count: int
+
+        :param silent: If true, supresses error messages regarding communication error
+            with the I2C device. This is useful for I2C bus scanning since most of
+            the scanned addresses do not have a corresponding device.
+        :type silent: bool
+
+        :return: A bytearray with the bytes read if the operation was successful, otherwise
+            None to indicate an error. The length of the bytearray is guaranteed to
+            be equal to byte_count.
+        :rtype: bytearray or None
         """
         assert isinstance(device_address, int)
         assert 0 <= device_address <= 127
@@ -87,8 +119,26 @@ class I2cAdapter:
         return bytearray(resp)
 
     def write(self, device_address: int, data: bytearray | bytes, silent=False) -> bool:
-        """Write data to an I2C device, return True if ok.
-        If silent, be silent for I2C error, but not for adapter errors.
+        """Write N bytes to an I2C device.
+
+        Performs an I2C start/write/stop transaction with the specified device.
+
+        :param device_address: The I2C address of the device to write to. This
+            value must be in the range [0, 0x7f]
+        :type device_address: int
+
+        :param data: The bytes to write. len(data) must be in the range [0, 256]. If data is 
+            emptry the transaction include the start/stop steps without byte writing. 
+            This is useful when scanning the I2C bus for devices
+        :type data: bytearray or bytess
+
+        :param silent: If true, supresses error messages regarding communication error
+            with the I2C device. This is useful for I2C bus scanning since most of
+            the scanned addresses do not have a corresponding device.
+        :type silent: bool
+
+        :return: True operation was successful, False, otherwise.
+        :rtype: bool
         """
         assert isinstance(device_address, int)
         assert 0 <= device_address <= 127
@@ -132,9 +182,25 @@ class I2cAdapter:
         return False
 
     def test_connection(self, max_tries: int = 3) -> bool:
-        """Use the ECHO command to test if the driver is connected to the host.
-        This does not test the connection between the driver and the I2C device.
-        Return True is the driver is responsive.
+        """Tests the serial communication with the I2C Adapter.
+
+        Tests the communication with the I2C Adapter by sending commands and verifying
+        the returns response. This method doesn't invloved the I2C bus, not should it affect
+        the I2C devices
+
+        This methos is exposes for diagnostic purposes and is not necessary in typicall
+        usage. It is used internally when the client API connects to the I2C adapter to
+        confirm the connection
+
+        
+        :param max_tries: The maximum number of communication attempts to perform. In some
+                cases more than one attempts may be needed for the I2C adapter and the API
+                client to sync states. It's recomanded to not specify this argument and
+                use the defaul value
+        :type max_tries: int
+
+        :return: True if test was successful, False otherwise
+        :rtype: bool
         """
         assert max_tries > 0
         for i in range(max_tries):
@@ -153,8 +219,7 @@ class I2cAdapter:
         return False
 
     def __test_echo_cmd(self, b: int) -> bool:
-        """Test if an echo command with given byte returns the same byte. Used
-        to test the connection to the driver."""
+        """Test if an echo command with given byte returns the exact same byte."""
         assert isinstance(b, int)
         assert 0 <= b <= 256
         req = bytearray()
