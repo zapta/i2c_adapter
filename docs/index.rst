@@ -38,18 +38,12 @@ API Reference
 =============
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-.. automodule:: i2cdriver
-   :members:
+  :maxdepth: 2
+  :caption: Contents:
 
 .. automodule:: i2c_adapter
-   :members:
-
-.. autoclass:: i2c_adapter.I2cAdapter
-   :member-order: bysource
-   :members:
+  :members:
+  :member-order: bysource
 
 
 Indices and tables
