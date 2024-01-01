@@ -8,17 +8,18 @@
 
 Overview
 ========
+
 The I2C Adpater project allows to use off-the-shelf and inexpensive boards as USB to I2C bridge
 by Mac, Windows, Linux and operating systems that supports portable Python. This document
 describes the i2c_adapter portable Python package that provides the API to control the I2C Adapter.
-The package is available from PyPi at https://pypi.org/project/i2c-adapter and can be installed
-using pip:
-
-.. code-block:: shell
-
-  pip install i2c_adapter
 
 
+|
+
+.. image:: ../www/wiring_diagram.png
+   :align: center
+
+|
 
 Examples
 ========
@@ -50,22 +51,72 @@ Scan the I2C bus for devices:
       if i2c.write(adr, bytearray([0]), silent=True):
           print(f"  - Found an I2C  device at 0x{adr:02x}")
 
+|
+
+Boards
+======
+
+To make your own I2C Adapter, get one of the off the shelves boards listed below, and flash it with corresponding I2C Adpter firmware from https://github.com/zapta/i2c_adapter/tree/main/firmware/release, according to the flashing instructions of the board. 
+
+:Example: 
+  For the Raspberry Pico and similar RP2040 boards, flashing is done by connecting the board
+  to the computer while pressing the BOOTSEL button, which cause the board to appear on the
+  computer as a disk drive, and then copying the firmware file to that driver.
+
++-------------------------------+-----------+------------+----------+---------+
+|                               | SDA       |  SCL       | Internal | Max     |
+|                               |           |            | Pullups  | Voltage |
++===============================+===========+============+==========+=========+
+| **Raspberry Pico**            | GP4       | GP5        |  No      |  3.3V   |
++-------------------------------+-----------+------------+----------+---------+
+| **Sparkfun Pro Micro RP2040** | Qwicc SDA | Qwicc SCL  | 2.2K     |  3.3V   |
++-------------------------------+-----------+------------+----------+---------+
+| **Adafruit KB2040**           | Qwicc SDA | Qwicc SCL  | No       |  3.3V   |
++-------------------------------+-----------+------------+----------+---------+
+| **Adafruit QT Py RP2040**     | Qwicc SDA | Qwicc SCL  | No       |  3.3V   |
++-------------------------------+-----------+------------+----------+---------+
+
+|
+
+Installation
+============
+
+The package is available from PyPi at https://pypi.org/project/i2c-adapter and can be installed
+using pip:
+
+.. code-block:: shell
+
+  pip install i2c_adapter
+
+:Note: 
+  The I2C Adapter boards appear on the computer as a standard CDC serial port and
+  thus do not require driver installation.
+
+|
 
 API Reference
 =============
-
-.. toctree::
-  :maxdepth: 2
-  :caption: Contents:
 
 .. automodule:: i2c_adapter
   :members:
   :member-order: bysource
 
+|
 
-Indices and tables
-==================
+Wire Protocol
+=============
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+TBD
+
+|
+
+Firmware Developement
+=====================
+
+TBD
+
+
+.. toctree::
+  :maxdepth: 2
+  :caption: Contents:
+
