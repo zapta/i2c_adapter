@@ -1,4 +1,5 @@
-# A driver for the simple I2C Adapter.
+"""This package provides a an easy to use Python API for accessing I2C
+ devices using an I2C Adapter compatible board."""
 
 from typing import Optional, List, Tuple
 from serial import Serial
@@ -6,6 +7,7 @@ import time
 
 
 class I2cAdapter:
+    """Provides access to a single I2C Adapter board. """
     def __init__(self, port: str):
         self.__serial: Serial = Serial(port, timeout=1.0)
         if not self.test_connection():
