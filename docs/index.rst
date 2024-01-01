@@ -80,8 +80,8 @@ instructions with the corresponding I2C Adpter firmware from https://github.com/
 
 |
 
-Installation
-============
+API Installation
+================
 
 The Python API package is available from PyPi at https://pypi.org/project/i2c-adapter and can be installed
 on your computer using pip:
