@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'I2C Adapter Python API'
+project = 'The I2C Adapter'
 copyright = '2023, Zapta'
 author = 'Zapta'
 release = '0.0.1'
