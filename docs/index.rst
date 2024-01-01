@@ -3,9 +3,22 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+Overview
+========
+The I2C Adpater project allows to use off-the-shelf and inexpensive boards as USB to I2C bridge
+by Mac, Windows, Linux and operating systems that supports portable Python. This document
+describes the i2c_adapter portable Python package that provides the API to control the I2C Adapter.
+The package is available from PyPi at https://pypi.org/project/i2c-adapter and can be installed
+using pip:
 
-Example
-=======
+.. code-block:: shell
+
+  pip install i2c_adapter
+
+
+
+Examples
+========
 Write and read I2C device 0x08 using the I2C Adapter at serial port COM7: 
 
 .. code-block:: python
