@@ -81,8 +81,8 @@ To make your own I2C Adapter, get one of the off the shelves boards listed below
 Installation
 ============
 
-The package is available from PyPi at https://pypi.org/project/i2c-adapter and can be installed
-using pip:
+The Python API package is available from PyPi at https://pypi.org/project/i2c-adapter and can be installed
+on your computer using pip:
 
 .. code-block:: shell
 
