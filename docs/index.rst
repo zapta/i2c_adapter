@@ -53,15 +53,17 @@ Scan the I2C bus for devices:
 
 |
 
-Boards
-======
+Supported Boards
+================
 
-To make your own I2C Adapter, get one of the off the shelves boards listed below, and flash it with corresponding I2C Adpter firmware from https://github.com/zapta/i2c_adapter/tree/main/firmware/release, according to the flashing instructions of the board. 
+The able below lists the currently supported boards.
+To make your own I2C Adapter, get one of these boards, and flash it according to the manufacturer's 
+instructions with the corresponding I2C Adpter firmware from https://github.com/zapta/i2c_adapter/tree/main/firmware/release. 
 
 :Example: 
-  For the Raspberry Pico and similar RP2040 boards, flashing is done by connecting the board
-  to the computer while pressing the BOOTSEL button, which cause the board to appear on the
-  computer as a disk drive, and then copying the firmware file to that driver.
+  For the Raspberry Pico and similar RP2040 boards, flash it by connecting the board
+  to your computer while holding the BOOTSEL button pressed to have the your computer recognize 
+  the board as a disk driver, then copying the firmware file to that driver.
 
 +-------------------------------+-----------+------------+----------+---------+
 |                               | SDA       |  SCL       | Internal | Max     |
