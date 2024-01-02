@@ -65,18 +65,18 @@ instructions with the corresponding I2C Adpter firmware from https://github.com/
   to your computer while holding the BOOTSEL button pressed to have the your computer recognize 
   the board as a disk driver, then copying the firmware file to that driver.
 
-+-------------------------------+-----------+------------+----------+---------+
-|                               | SDA       |  SCL       | Internal | Max     |
-|                               |           |            | Pullups  | Voltage |
-+===============================+===========+============+==========+=========+
-| **Raspberry Pico**            | GP4       | GP5        |  No      |  3.3V   |
-+-------------------------------+-----------+------------+----------+---------+
-| **Sparkfun Pro Micro RP2040** | Qwiic SDA | Qwiic SCL  | 2.2K     |  3.3V   |
-+-------------------------------+-----------+------------+----------+---------+
-| **Adafruit KB2040**           | Qwiic SDA | Qwiic SCL  | No       |  3.3V   |
-+-------------------------------+-----------+------------+----------+---------+
-| **Adafruit QT Py RP2040**     | Qwiic SDA | Qwiic SCL  | No       |  3.3V   |
-+-------------------------------+-----------+------------+----------+---------+
++-------------------------------------------------------------------------------+-----------+------------+----------+---------+
+|  Board                                                                        | SDA       |  SCL       | Internal | Max     |
+|                                                                               |           |            | Pullups  | Voltage |
++===============================================================================+===========+============+==========+=========+
+| `Raspberry Pico <https://www.raspberrypi.com/products/raspberry-pi-pico/>`_   | GP4       | GP5        |  No      |  3.3V   |
++-------------------------------------------------------------------------------+-----------+------------+----------+---------+
+| `Sparkfun Pro Micro RP2040 <https://www.sparkfun.com/products/18288>`_        | Qwiic SDA | Qwiic SCL  | 2.2K     |  3.3V   |
++-------------------------------------------------------------------------------+-----------+------------+----------+---------+
+| `Adafruit KB2040 <https://learn.adafruit.com/adafruit-kb2040/overview>`_      | Qwiic SDA | Qwiic SCL  | No       |  3.3V   |
++-------------------------------------------------------------------------------+-----------+------------+----------+---------+
+| `Adafruit QT Py RP2040 <https://www.adafruit.com/product/4900>`_              | Qwiic SDA | Qwiic SCL  | No       |  3.3V   |
++-------------------------------------------------------------------------------+-----------+------------+----------+---------+
 
 |
 
