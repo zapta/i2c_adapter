@@ -335,6 +335,16 @@ Adding a typical board includes adding:
 
 * A new binary to the release.
 
+|
+
+Contact
+=======
+
+Bug reports and contributions are welcome. You can contact the team and fellow users at the 
+gibhub repository at https://github.com/zapta/i2c_adapter.
+
+
+
 .. toctree::
   :maxdepth: 2
   :caption: Contents:
