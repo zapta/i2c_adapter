@@ -224,14 +224,68 @@ The read command reads 0 <= N <= 256 bytes from the I2C device with a given addr
 Info Command
 ------------
 
-TBD.
+The info command allows the client to retrieve information about the I2C Adapter.
+
+**Request**
+
+  .. table::
+    :width: 90%
+    :widths: 15,85
+
+    +----------------------+---------------------------------------------+
+    | Byte 0               | 'i' for Info.                               |
+    +----------------------+---------------------------------------------+
+
+
+
+**Response**
+
+  .. table::
+    :width: 90%
+    :widths: 15,85
+
+    +----------------------+---------------------------------------------+
+    | Byte 0               | Number of bytes to follow (3)               |
+    +----------------------+---------------------------------------------+
+    | Byte 1               | Wire format version (1)                     |
+    +----------------------+---------------------------------------------+
+    | Byte 2               | Firmware version number MSB (0)             |
+    +----------------------+---------------------------------------------+
+    | Byte 3               | Firmware version number LSB (1)             |
+    +----------------------+---------------------------------------------+
 
 |
 
 Echo Command
 ------------
 
-TBD
+The echo command accepts one data byte and sends it back. Allows the client to test the serial connection
+to the I2C Adapter and the I2C Adapter readiness to accept new commands.
+
+**Request**
+
+  .. table::
+    :width: 90%
+    :widths: 15,85
+
+    +----------------------+---------------------------------------------+
+    | Byte 0               | 'e' for Echo.                               |
+    +----------------------+---------------------------------------------+
+    | Byte 1               | A data byte to echo.                        |
+    +----------------------+---------------------------------------------+
+
+
+
+**Response**
+
+  .. table::
+    :width: 90%
+    :widths: 15,85
+
+    +----------------------+---------------------------------------------+
+    | Byte 0               | The data byte from the request.             |
+    +----------------------+---------------------------------------------+
+
 
 |
 
