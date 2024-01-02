@@ -112,11 +112,51 @@ TBD
 
 |
 
-Firmware Developement
+Firmware Development
 =====================
 
-TBD
+The firmware is written in C++ and is developed as a platformio project under Visual Studio Code. The following
+sections summarize the key aspect of the firmware development.
 
+Project Structure
+----------------------------
+The platformio project resides in the firmware/platformio directory of the I2C Adapter repository https://github.com/zapta/i2c_adapter, 
+the project configuration is in the `platformio.ini <https://github.com/zapta/i2c_adapter/tree/main/firmware/platformio>`_ file
+and the source code is in the  `src directory <https://github.com/zapta/i2c_adapter/blob/main/firmware/platformio/src>`_.
+
+Setting up the environment
+--------------------------
+1. Install Microsoft's Visual Studio Code ('VSC')
+#. In VSC, add the extension 'platformio'
+#. Clone the I2C Adapter `github repository <https://github.com/zapta/i2c_adapter>`_ on your computer.
+#. Use VSC's 'file | open-folder', to open the 'platformio' directory in your local repository.
+#. After platformio will complete installing the necessary tools, click on the 'build' icon in the status bar to verify that the project builds correctly.
+
+Testing a new firmware version
+------------------------------
+1. Make the changes in the source code.
+#. Connect a compatible board to your computer.
+#. Select in the status bar the board target that matches your board.
+#. Use the 'upload' button in the status bar to build and upload the binary to the board.
+
+Generating new binaries
+-----------------------
+Run the python script 'build_env.py' and it will build binaries for all the targets and will copy them to 
+release directory.
+
+Adding a new board
+------------------------------
+Board definitions resides in platformio.ini and in src/board.cpp and the amount
+of refactoring needed to add a board depends how close it is to the existing boards.
+Adding a typical board includes adding:
+
+* A new target to platformio.ini
+
+* A new section in src/boards.cpp.
+
+* A new row to the documentation's list.
+
+* A new binary to the release.
 
 .. toctree::
   :maxdepth: 2
