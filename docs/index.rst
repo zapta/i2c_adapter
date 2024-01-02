@@ -11,7 +11,7 @@ Overview
 
 The I2C Adpater project allows to use off-the-shelf and inexpensive boards as USB to I2C bridge
 by Mac, Windows, Linux and operating systems that supports portable Python. This document
-describes the i2c_adapter portable Python package that provides the API to control the I2C Adapter.
+describes the portable Python package ``i2c_adapter`` that provides the API to control the I2C Adapter.
 
 
 |
@@ -108,7 +108,7 @@ API Reference
 The Wire Protocol
 =================
 
-The i2c_adapter Python package communicates with the I2C Adapter board by sending command requested on 
+The ``i2c_adapter`` package communicates with the I2C Adapter board by sending command requested on 
 a serial connection and recieving command response. Each command and response is made of a plain sequence of
 'binary' bytes with no special encoding such as end of line or escaping. Following is the 
 specification request/response byte sequences of each of the protocol commands. For more details,
