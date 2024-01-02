@@ -57,49 +57,6 @@ for adr in range(0, 127):
 
 <br>
 
-## LED Status
+## Documentation
 
-| I2C Adapter state         | Raspberry Pi LED state
-|--------------|-----------|
-| Idle, waiting for a command.  | A short blink every two seconds.
-| Performing a command.  | On.
-| Firmware flashing mode. | Off
-
-<br>
-
-## Connecting your I2C Adapter
-
----
-**IMPORTANT**
-
-**Do not to exceed the maximal voltage of your board. If needed,  use a bidirectional I2C level shifter such as <https://www.adafruit.com/product/5649>.
-
----
-Flash your board with the corresponding firmware from  <https://github.com/zapta/i2c_adapter/tree/main/firmware/release> and connect according to the table below:
-
-|          | SDA |  SCL | Internal Pullups | Max Voltage |
-|--------------|-----------|------------|:------------:|---|
-| **Raspberry Pico** | GP4 | GP5 |  No|  3.3V |
-| **Sparkfun Pro Micro RP2040** | Qwicc SDA | Qwicc SCL | 2.2K |  3.3V|
-| **Adafruit KB2040** | Qwicc SDA | Qwicc SCL | No | 3.3V|
-| **Adafruit QT Py RP2040** | Qwicc SDA | Qwicc SCL | No | 3.3V |
-
-
-
-
-<br>
-
-## The wire protocol
-
-See comments in the [firmware source code](https://github.com/zapta/i2c_adapter/blob/main/firmware/platformio/src/main.cpp).
-
-<bre>
-
-## For firmware developers
-
-We use Visual Code Studion with the Platformio plug in to develope the firmware. Once you install both, clone this repository <https://github.com/zapta/i2c_adapter> on your machine and use the Menu | File | Open Folder option to open the firmware/platformio directory in the repository. Platformio take a few minutes do configure your environment and you will be able to edit/compile/upload code. Building firmware releases is done by running the Python script build_envs.py.
-
-
-
-
-
+Full documentation is available at <https://i2c-adapter.readthedocs.io/>
