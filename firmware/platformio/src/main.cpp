@@ -301,6 +301,10 @@ static CommandHandler* find_command_handler_by_char(const char cmd_char) {
 }
 
 void setup() {
+  // A short delay to let the USB/CDC settle down. Otherwise
+  // it messes up with the debugger, in case it's used.
+  delay(500);
+
   board::setup();
   board::led.update(false);
   last_led_state = false;
