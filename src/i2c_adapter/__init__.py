@@ -1,4 +1,6 @@
-# A driver for the simple I2C Adapter.
+"""The ``i2c_adapter`` package provides the API to access I2C Adapter boards. To access an I2C Adapter,
+create an object of the  class I2CAdapter, and use the methods it provides.
+"""
 
 from typing import Optional, List, Tuple
 from serial import Serial
@@ -6,102 +8,36 @@ import time
 
 
 class I2cAdapter:
+    """Connects to the I2C Adapter at the specified serial port and asserts that the
+    I2C responses as expcted.
+
+    :param port: The serial port of the I2C Adapter. I2C Adapters
+        appear on the local computer as a standard serial port
+    :type port: str
+    """
+
     def __init__(self, port: str):
         self.__serial: Serial = Serial(port, timeout=1.0)
         if not self.test_connection_to_driver():
             raise RuntimeError(f"i2c driver not detected at port {port}")
 
-    def test_connection_to_driver(self, max_tries: int = 3) -> bool:
-        """Use the ECHO command to test if the driver is connected to the host.
-        This does not test the connection between the driver and the I2C device.
-        Return True is the driver is responsive.
-        """
-        assert max_tries > 0
-        for i in range(max_tries):
-            if i > 0:
-                # Delay to let any pending command to timeout.
-                time.sleep(0.3)
-            ok: bool = True
-            for b in [0x00, 0xFF, 0x5A, 0xA5]:
-                if not self.__test_echo_cmd(b):
-                    ok = False
-                    break
-            if ok:
-                # We had one good pass on all patterns. We are good.
-                return True
-        # All tries failed.
-        return False
-
-    def __test_echo_cmd(self, b: int) -> bool:
-        """Test if an echo command with given byte returns the same byte. Used
-        to test the connection to the driver."""
-        assert isinstance(b, int)
-        assert 0 <= b <= 256
-        req = bytearray()
-        req.append(ord("e"))
-        req.append(b)
-        self.__serial.write(req)
-        resp = self.__serial.read(1)
-        assert isinstance(resp, bytes), type(resp)
-        assert len(resp) == 1
-        return resp[0] == b
-
-    def write(self, device_address: int, data: bytearray | bytes, silent=False) -> bool:
-        """Write data to an I2C device, return True if ok.
-        If silent, be silent for I2C error, but not for adapter errors.
-        """
-        assert isinstance(device_address, int)
-        assert 0 <= device_address <= 127
-        assert isinstance(data, bytearray) or isinstance(data, bytes)
-        assert 0 <= len(data) <= 256
-
-        # Construct and send the command request.
-        req = bytearray()
-        req.append(ord("w"))
-        req.append(device_address)
-        req.append(len(data) // 256)  # Count MSB
-        req.append(len(data) % 256)  # Count LSB
-        req.extend(data)
-        n = self.__serial.write(req)
-        if n != len(req):
-            print(
-                f"I2C write: write mismatch, expected {len(req)}, got {n}", flush=True
-            )
-            return False
-
-        # Read the status flag.
-        resp = self.__serial.read(1)
-        assert isinstance(resp, bytes), type(resp)
-        if len(resp) != 1:
-            print(
-                f"I2C write: status read mismatch, expected {1}, got {len(resp)}",
-                flush=True,
-            )
-            return False
-        if resp[0] not in (ord("E"), ord("K")):
-            print(f"I2C write: unexpected status in response: {resp}", flush=True)
-            return False
-        if resp[0] == ord("K"):
-            return True
-
-        # Read the extra info status byte.
-        resp = self.__serial.read(1)
-        assert isinstance(resp, bytes), type(resp)
-        if len(resp) != 1:
-            print(
-                f"I2C write: extra status read mismatch, expected {1}, got {len(resp)}",
-                flush=True,
-            )
-            return False
-        if not silent:
-            print(f"I2C write: failed with status = {resp[0]:02x}", flush=True)
-        return False
-
     def read(
         self, device_address: int, byte_count: int, silent=False
     ) -> Optional[bytearray]:
-        """Read a given number of bytes from an I1C device. Returns the bytes or None if error.
-        If silent, be silent for I2C error, but not for adapter errors.
+        """Reads N bytes from an I2C device.
+
+        :param device_address: I2C device address in the range [0, 0xff].
+        :type device_address: int
+
+        :param byte_count: The number of bytes to read. Should be in the range [0, 256].
+        :type byte_count: int
+
+        :param silent: If true, supress printing of error messages. Useful when using the method
+            to scan the I2C bus for devices. Default value is good for most other use cases
+        :type silent: bool
+
+        :returns: A bytearray with ``byte_count`` bytes read, or None if an error
+        :rtype: bytearray
         """
         assert isinstance(device_address, int)
         assert 0 <= device_address <= 127
@@ -177,3 +113,108 @@ class I2cAdapter:
             )
             return None
         return bytearray(resp)
+
+    def write(self, device_address: int, data: bytearray | bytes, silent=False) -> bool:
+        """Write N bytes to an I2C device.
+
+        :param device_address: I2C device address in the range [0, 0xff].
+        :type device_address: int
+
+        :param data: The bytes to write. ``len(data)`` should be in the range [0, 256].
+        :type data: bytearray or bytes.
+
+        :param silent: If true, supress printing of error messages. Useful when using the method
+            to scan the I2C bus for devices. Default value is good for most other use cases.
+        :type silent: bool
+
+        :returns: True if ok, False if an error.
+        :rtrype: bool
+        """
+        assert isinstance(device_address, int)
+        assert 0 <= device_address <= 127
+        assert isinstance(data, bytearray) or isinstance(data, bytes)
+        assert 0 <= len(data) <= 256
+
+        # Construct and send the command request.
+        req = bytearray()
+        req.append(ord("w"))
+        req.append(device_address)
+        req.append(len(data) // 256)  # Count MSB
+        req.append(len(data) % 256)  # Count LSB
+        req.extend(data)
+        n = self.__serial.write(req)
+        if n != len(req):
+            print(
+                f"I2C write: write mismatch, expected {len(req)}, got {n}", flush=True
+            )
+            return False
+
+        # Read the status flag.
+        resp = self.__serial.read(1)
+        assert isinstance(resp, bytes), type(resp)
+        if len(resp) != 1:
+            print(
+                f"I2C write: status read mismatch, expected {1}, got {len(resp)}",
+                flush=True,
+            )
+            return False
+        if resp[0] not in (ord("E"), ord("K")):
+            print(f"I2C write: unexpected status in response: {resp}", flush=True)
+            return False
+        if resp[0] == ord("K"):
+            return True
+
+        # Read the extra info status byte.
+        resp = self.__serial.read(1)
+        assert isinstance(resp, bytes), type(resp)
+        if len(resp) != 1:
+            print(
+                f"I2C write: extra status read mismatch, expected {1}, got {len(resp)}",
+                flush=True,
+            )
+            return False
+        if not silent:
+            print(f"I2C write: failed with status = {resp[0]:02x}", flush=True)
+        return False
+
+    def test_connection_to_driver(self, max_tries: int = 3) -> bool:
+        """Tests connection to the I2C Adapter.
+
+        The method tests if the I2C adapter exists and is responding. It is provided
+        for diagnostic purposes and is not needed in typical applications.
+
+        :param max_tries: Max number of attempts. The default should be good for most case.
+        :type max_tries: int
+
+        :returns: True if connection is OK, false otherwise.
+        :rtype: bool 
+        """
+        assert max_tries > 0
+        for i in range(max_tries):
+            if i > 0:
+                # Delay to let any pending command to timeout.
+                time.sleep(0.3)
+            ok: bool = True
+            for b in [0x00, 0xFF, 0x5A, 0xA5]:
+                if not self.__test_echo_cmd(b):
+                    ok = False
+                    break
+            if ok:
+                # We had one good pass on all patterns. We are good.
+                return True
+        # All tries failed.
+        return False
+
+    def __test_echo_cmd(self, b: int) -> bool:
+        """Test if an echo command with given byte returns the same byte. Used
+        to test the connection to the driver."""
+        assert isinstance(b, int)
+        assert 0 <= b <= 256
+        req = bytearray()
+        req.append(ord("e"))
+        req.append(b)
+        self.__serial.write(req)
+        resp = self.__serial.read(1)
+        assert isinstance(resp, bytes), type(resp)
+        assert len(resp) == 1
+        return resp[0] == b

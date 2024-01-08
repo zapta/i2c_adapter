@@ -10,14 +10,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "i2c_adapter"
-version = "0.02.10"
+version = "0.02.14"
 authors = [
   { name="Zapta", email="zapta@zapta.com" },
 ]
-description = "An easy to use USB to I2C adapter using a Raspberry Pico or similar boards."
+description = "An easy to use USB to I2C adapter using a Raspberry Pico and similar boards."
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
     "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
     "Operating System :: OS Independent",
@@ -44,5 +45,6 @@ exclude = [
 [project.urls]
 "Homepage" = "https://github.com/zapta/i2c_adapter"
 "Documentation" = "https://i2c-adapter.readthedocs.io/en/latest"
+"Repository" = "https://github.com/zapta/i2c_adapter.git"
 "Bug Tracker" = "https://github.com/zapta/i2c_adapter/issues"
 
