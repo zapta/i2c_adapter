@@ -8,6 +8,20 @@
 using board::i2c;
 using board::led;
 
+static uint8_t aux_pins[] = {
+    0,  // Aux 0 = GP0
+    1,  // Aux 0 = GP1
+    2,  // Aux 0 = GP2
+    3,  // Aux 0 = GP3
+    4,  // Aux 0 = GP4
+    5,  // Aux 0 = GP5
+    6,  // Aux 0 = GP6
+    7,  // Aux 0 = GP7
+};
+
+static constexpr uint8_t kNumAuxPins = sizeof(aux_pins) / sizeof(*aux_pins);
+static_assert(kNumAuxPins == 8);
+
 static constexpr uint8_t kApiVersion = 1;
 static constexpr uint16_t kFirmwareVersion = 1;
 
@@ -291,6 +305,155 @@ static class ReadCommandHandler : public CommandHandler {
 
 } read_cmd_handler;
 
+// SET AUXILARY PIN MODE command.
+//
+// Command:
+// - byte 0:    'm'
+// - byte 1:    pin index, 0 - 7
+// - byte 2:    pin mode
+//
+// Error response:
+// - byte 0:    'E' for error.
+// - byte 1:    Error code, per the list below, providing more information about
+// the error.
+//
+// OK response
+// - byte 0:    'K' for 'OK'.
+
+// Error codes:
+//  1 : Pin index out of range.
+//  2 : Mode value out of range.
+static class AuxPinModeCommandHandler : public CommandHandler {
+ public:
+  AuxPinModeCommandHandler() : CommandHandler("AUX_MODE") {}
+
+  virtual bool on_cmd_loop() override {
+    // Read command header.
+    // if (!_got_cmd_header) {
+    static_assert(sizeof(data_buffer) >= 2);
+    if (!read_serial_bytes(data_buffer, 2)) {
+      return false;
+    }
+    // Parse the command header
+    const uint8_t aux_pin_index = data_buffer[0];
+    const uint8_t aux_pin_mode = data_buffer[1];
+
+    // Check aux pin index range.
+    if (aux_pin_index >= kNumAuxPins) {
+      Serial.write('E');
+      Serial.write(0x01);
+      return true;
+    }
+
+    // Map to underlying gpio pin.
+    const uint8_t gpio_pin = aux_pins[aux_pin_index];
+
+    // Dispatch by pin mode:
+    switch (aux_pin_mode) {
+      // Input pulldown
+      case 1:
+        pinMode(gpio_pin, INPUT_PULLDOWN);
+        break;
+
+      // Input pullup
+      case 2:
+        pinMode(gpio_pin, INPUT_PULLUP);
+        break;
+
+      // Output.
+      case 3:
+        pinMode(gpio_pin, OUTPUT);
+        break;
+
+      default:
+        Serial.write('E');
+        Serial.write(0x02);
+        return true;
+    }
+
+    // All done Ok
+    Serial.write('K');
+    return true;
+  }
+
+} aux_mode_cmd_handler;
+
+// READ AUXILARY PINS command.
+//
+// Command:
+// - byte 0:    'a'
+//
+// Error response:
+// - byte 0:    'E' for error.
+// - byte 1:    Reserved. Always 0.
+//
+// OK response
+// - byte 0:    'K' for 'OK'.
+// - byte 1:    Auxilary pins values
+static class AuxPinsReadCommandHandler : public CommandHandler {
+ public:
+  AuxPinsReadCommandHandler() : CommandHandler("AUX_READ") {}
+
+  virtual bool on_cmd_loop() override {
+    uint8_t result = 0;
+    static_assert(kNumAuxPins == 8);
+    for (int i = 7; i >= 0; i--) {
+      const uint8_t gpio_pin = aux_pins[i];
+      const PinStatus pin_status = digitalRead(gpio_pin);
+      result = result << 1;
+      if (pin_status) {
+        result |= 0b00000001;
+      }
+    }
+
+    // All done Ok
+    Serial.write('K');
+    Serial.write(result);
+    return true;
+  }
+
+} aux_pins_read_cmd_handler;
+
+// WRITE AUXILARY PINS command.
+//
+// Command:
+// - byte 0:    'b'
+// - byte 1:    New pins values
+// - byte 2:    Write mask. Only pins with a corresponding '1' are written.
+//
+// Error response:
+// - byte 0:    'E' for error.
+// - byte 1:    Reserved. Always 0.
+//
+// OK response
+// - byte 0:    'K' for 'OK'.
+static class AuxPinsWriteCommandHandler : public CommandHandler {
+ public:
+  AuxPinsWriteCommandHandler() : CommandHandler("AUX_WRITE") {}
+
+  virtual bool on_cmd_loop() override {
+    static_assert(sizeof(data_buffer) >= 2);
+    if (!read_serial_bytes(data_buffer, 2)) {
+      return false;
+    }
+    const uint8_t values = data_buffer[0];
+    const uint8_t mask = data_buffer[1];
+    static_assert(kNumAuxPins == 8);
+    for (int i = 0; i < 8; i++) {
+      if (mask & 1 << i) {
+        const uint8_t gpio_pin = aux_pins[i];
+        // TODO: We write also to input pins. What is the semantic?
+        digitalWrite(gpio_pin, values & 1 << i);
+      }
+    }
+
+    // All done Ok
+    Serial.write('K');
+    return true;
+  }
+
+} aux_pins_write_cmd_handler;
+
 // Given a command char, return a Command pointer or null if invalid command
 // char.
 static CommandHandler* find_command_handler_by_char(const char cmd_char) {
@@ -303,6 +466,12 @@ static CommandHandler* find_command_handler_by_char(const char cmd_char) {
       return &write_cmd_handler;
     case 'r':
       return &read_cmd_handler;
+    case 'm':
+      return &aux_mode_cmd_handler;
+    case 'a':
+      return &aux_pins_read_cmd_handler;
+    case 'b':
+      return &aux_pins_write_cmd_handler;
     default:
       return nullptr;
   }
@@ -320,6 +489,13 @@ void setup() {
   // USB serial.
   Serial.begin(115200);
 
+  // Init aux pins as inputs.
+  for (uint8_t i = 0; i < kNumAuxPins; i++) {
+    auto gp_pin = aux_pins[i];
+    pinMode(gp_pin, INPUT_PULLUP);
+  }
+
+  // Init I2C.
   i2c.setClock(400000);   // 400Khz.
   i2c.setTimeout(50000);  // 50ms timeout.
   i2c.begin();
@@ -336,7 +512,8 @@ void loop() {
   // Update LED state. Solid if active or short blinks if idle.
   {
     const bool is_active = current_cmd || millis_since_cmd_start < 200;
-    const bool new_led_state = is_active  ||  (millis_since_cmd_start & 0b11111111100) == 0;
+    const bool new_led_state =
+        is_active || (millis_since_cmd_start & 0b11111111100) == 0;
     if (new_led_state != last_led_state) {
       led.update(new_led_state);
       last_led_state = new_led_state;

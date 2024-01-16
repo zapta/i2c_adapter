@@ -7,6 +7,15 @@ from serial import Serial
 import time
 
 
+# NOTE: Numeric values match wire protocol.
+class AuxPinMode(Enum):
+    """Auxilary pin modes."""
+
+    INPUT_PULLDOWN = 1
+    INPUT_PULLUP = 2
+    OUTPUT = 3
+
+
 class I2cAdapter:
     """Connects to the I2C Adapter at the specified serial port and asserts that the
     I2C responses as expcted.
@@ -181,6 +190,72 @@ class I2cAdapter:
             return None
 
         # All ok.
+        return True
+
+    def set_aux_pin_mode(self, pin: int, pin_mode: AuxPinMode) -> bool:
+        """Sets the mode of an auxilary pin.
+
+        :param pin: The aux pin index, should be in [0, 7].
+        :type pin: int
+
+        :param pin_mode: The new pin mode.
+        :type pin_mode: AuxPinMode
+
+        :returns: True if OK, False otherwise.
+        :rtype: bool
+        """
+        assert isinstance(pin, int)
+        assert 0 <= pin <= 7
+        assert isinstance(pin_mode, AuxPinMode)
+        req = bytearray()
+        req.append(ord("m"))
+        req.append(pin)
+        req.append(pin_mode.value)
+        self.__serial.write(req)
+        ok_resp = self.__read_adapter_response("Aux mode", 0)
+        if ok_resp is None:
+            return False
+        return True
+
+    def read_aux_pins(self) -> int | None:
+        """Reads the auxilary pins.
+
+        :returns: The pins value as a 8 bit in value or None if an error.
+        :rtype: int | None
+        """
+        req = bytearray()
+        req.append(ord("a"))
+        self.__serial.write(req)
+        ok_resp = self.__read_adapter_response("Aux read", 1)
+        if ok_resp is None:
+            return None
+        return ok_resp[0]
+
+    def write_aux_pins(self, values, mask=0b11111111) -> bool:
+        """Writes the aux pins.
+
+        :param values: An 8 bits integer with the bit values to write. In the range [0, 255].
+        :type pin: int
+
+        :param mask: An 8 bits int with mask that indicates which auxilary pins should be written. If
+            the corresponding bits is 1 than the pin is updated otherwise it's left as is.
+        :type mask: int
+
+        :returns: True if OK, False otherwise.
+        :rtype: bool
+        """
+        assert isinstance(values, int)
+        assert 0 <= values <= 255
+        assert isinstance(mask, int)
+        assert 0 <= mask <= 255
+        req = bytearray()
+        req.append(ord("b"))
+        req.append(values)
+        req.append(mask)
+        self.__serial.write(req)
+        ok_resp = self.__read_adapter_response("Aux write", 0)
+        if ok_resp is None:
+            return False
         return True
 
     def test_connection_to_driver(self, max_tries: int = 3) -> bool:
