@@ -331,7 +331,7 @@ static class AuxPinModeCommandHandler : public CommandHandler {
     // Read command header.
     // if (!_got_cmd_header) {
     static_assert(sizeof(data_buffer) >= 2);
-    if (!read_serial_bytes(data_buffer, 2)) {
+    if (!read_serial_bytes(2)) {
       return false;
     }
     // Parse the command header
@@ -433,7 +433,7 @@ static class AuxPinsWriteCommandHandler : public CommandHandler {
 
   virtual bool on_cmd_loop() override {
     static_assert(sizeof(data_buffer) >= 2);
-    if (!read_serial_bytes(data_buffer, 2)) {
+    if (!read_serial_bytes(2)) {
       return false;
     }
     const uint8_t values = data_buffer[0];
