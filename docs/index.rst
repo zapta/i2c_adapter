@@ -69,7 +69,7 @@ instructions with the corresponding I2C Adpter firmware from https://github.com/
 |  Board                                                                        | SDA       |  SCL       | Internal | Max     |
 |                                                                               |           |            | Pullups  | Voltage |
 +===============================================================================+===========+============+==========+=========+
-| `Raspberry Pico <https://www.raspberrypi.com/products/raspberry-pi-pico/>`_   | GP4       | GP5        |  No      |  3.3V   |
+| `Raspberry Pico <https://www.raspberrypi.com/products/raspberry-pi-pico/>`_   | GP14      | GP15       |  No      |  3.3V   |
 +-------------------------------------------------------------------------------+-----------+------------+----------+---------+
 | `Sparkfun Pro Micro RP2040 <https://www.sparkfun.com/products/18288>`_        | Qwiic SDA | Qwiic SCL  | 2.2K     |  3.3V   |
 +-------------------------------------------------------------------------------+-----------+------------+----------+---------+

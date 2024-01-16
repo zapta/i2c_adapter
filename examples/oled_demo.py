@@ -23,7 +23,7 @@ from PIL import ImageFont, ImageColor
 
 
 # Customize for your system.
-my_port = "COM20"
+my_port = "COM18"
 my_oled_addr = 0x3C
 
 

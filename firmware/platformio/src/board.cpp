@@ -37,7 +37,7 @@ namespace board {
 
 #ifdef BOARD_RASPBERRY_PICO
 static SimpleLed _led(25);
-TwoWire i2c(4, 5);
+TwoWire i2c(14, 15);
 void setup() {}
 #endif
 
