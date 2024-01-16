@@ -7,6 +7,9 @@
 import time
 import datetime
 
+# import sys
+# sys.path.insert(0, '../src/')
+
 from i2c_adapter import I2cAdapter
 from luma.oled.device import sh1106
 from luma.core.render import canvas

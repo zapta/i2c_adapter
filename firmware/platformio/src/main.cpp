@@ -27,8 +27,10 @@ static constexpr uint32_t kCommandTimeoutMillis = 250;
 // it by filtering the 'no-change' updates.
 static bool last_led_state;
 
-// A temporary buffer for commands and I2C operations.
+// A buffer for reading data from the serial port.
 static uint8_t data_buffer[kMaxReadWriteBytes];
+// The number of valid bytes in data_buffer.
+static uint16_t data_size = 0;
 
 // A simple timer.
 // Cveate: overflows 50 days after last reset().
@@ -47,19 +49,20 @@ class Timer {
 // Time since the start of last cmd.
 static Timer cmd_timer;
 
-// Read exactly n chanrs to data buffer. If not enough bytes, none is read
-// and the function returns false.
-static bool read_serial_bytes(uint8_t* bfr, uint16_t n) {
+// Fill data_buffer with n bytes. Done in chunks. data_size tracks the 
+// num of bytes read so far.
+static bool read_serial_bytes(uint16_t n) {
   // Handle the case where not enough chars.
-  const int avail = Serial.available();
-  if (avail < (int)n) {
-    return false;
+  const uint16_t avail = Serial.available();
+  const uint16_t required = n - data_size;
+  const uint16_t requested = std::min(avail, required);
+  
+  if (requested) {
+    size_t actual_read = Serial.readBytes((char*)(&data_buffer[data_size]), requested);
+    data_size += actual_read;
   }
 
-  // TODO: Verify actual read == n;
-  size_t actual_read = Serial.readBytes((char*)bfr, n);
-  (void)actual_read;
-  return true;
+  return data_size >= n;
 }
 
 // Abstract base of all command handlers.
@@ -93,7 +96,7 @@ static class EchoCommandHandler : public CommandHandler {
   EchoCommandHandler() : CommandHandler("ECHO") {}
   virtual bool on_cmd_loop() override {
     static_assert(sizeof(data_buffer) >= 1);
-    if (!read_serial_bytes(data_buffer, 1)) {
+    if (!read_serial_bytes(1)) {
       return false;
     }
     Serial.write(data_buffer[0]);
@@ -108,14 +111,20 @@ static class EchoCommandHandler : public CommandHandler {
 // - byte 0:  'i'
 //
 // Response:
-// - byte 0:  Number of bytes to follow (3).
-// - byte 1:  Version of wire format API.
-// - byte 2:  MSB of firmware version.
-// - byte 3:  LSB of firmware version.
+// - byte 0:  'K' for OK.
+// - byte 1:  Magic number MSB
+// - byte 2:  Magic number LSB
+// - byte 3:  Number of bytes to follow (3).
+// - byte 4:  Version of wire format API.
+// - byte 5:  MSB of firmware version.
+// - byte 6:  LSB of firmware version.
 static class InfoCommandHandler : public CommandHandler {
  public:
   InfoCommandHandler() : CommandHandler("INFO") {}
   virtual bool on_cmd_loop() override {
+    Serial.write('K');                      // OK.
+    Serial.write(0x45);                     // Magic number MSB.
+    Serial.write(0x67);                     // Magic number LSB.
     Serial.write(0x03);                     // Number of bytes to follow.
     Serial.write(kApiVersion);              // API version.
     Serial.write(kFirmwareVersion >> 8);    // Firmware version MSB.
@@ -135,13 +144,12 @@ static class InfoCommandHandler : public CommandHandler {
 //
 // Error response:
 // - byte 0:    'E' for error.
-// - byte 1:    Additional device specific internal error info per the list
-// below.
+// - byte 1:    Error code. See list below.
 //
 // OK response
 // - byte 0:    'K' for 'OK'.
 //
-// Additional error info:
+// Error codes:
 //  1 : Data too long
 //  2 : NACK on transmit of address
 //  3 : NACK on transmit of data
@@ -162,12 +170,13 @@ static class WriteCommandHandler : public CommandHandler {
     // Read command header.
     if (!_got_cmd_header) {
       static_assert(sizeof(data_buffer) >= 3);
-      if (!read_serial_bytes(data_buffer, 3)) {
+      if (!read_serial_bytes(3)) {
         return false;
       }
       _device_addr = data_buffer[0];
       _count = (((uint16_t)data_buffer[1]) << 8) + data_buffer[2];
       _got_cmd_header = true;
+      data_size = 0;
     }
 
     // Validate the command header.
@@ -182,7 +191,7 @@ static class WriteCommandHandler : public CommandHandler {
 
     // Read the data bytes
     static_assert(sizeof(data_buffer) >= kMaxReadWriteBytes);
-    if (!read_serial_bytes(data_buffer, _count)) {
+    if (!read_serial_bytes(_count)) {
       return false;
     }
 
@@ -220,8 +229,7 @@ static class WriteCommandHandler : public CommandHandler {
 //
 // Error  Response:
 // - byte 0:    'E' for 'error'.
-// - byte 1:    Additional device specific internal error info per the list
-// below.
+// - byte 1:    Error code. See list below.
 //
 // OK Response:
 // - byte 0:    'K' for 'OK'.
@@ -229,7 +237,7 @@ static class WriteCommandHandler : public CommandHandler {
 //              count in the command.
 // - byte 3...  The bytes read.
 //
-// Additional error info:
+// Error codes:
 //  1 : Byte count mismatch while reading.
 //  2 : Bytes not available for reading.
 //  8 : Device address out of range..
@@ -242,7 +250,7 @@ static class ReadCommandHandler : public CommandHandler {
     // Get the command address and the count.
 
     static_assert(sizeof(data_buffer) >= 3);
-    if (!read_serial_bytes(data_buffer, 3)) {
+    if (!read_serial_bytes(3)) {
       return false;  // try later
     }
 
@@ -351,10 +359,10 @@ void loop() {
     return;
   }
 
-  // Not in a command.
   // Try to read selection char of next command.
   static_assert(sizeof(data_buffer) >= 1);
-  if (!read_serial_bytes(data_buffer, 1)) {
+  data_size = 0;
+  if (!read_serial_bytes(1)) {
     return;
   }
 
@@ -362,6 +370,7 @@ void loop() {
   current_cmd = find_command_handler_by_char(data_buffer[0]);
   if (current_cmd) {
     cmd_timer.reset(millis_now);
+    data_size = 0;
     current_cmd->on_cmd_entered();
     // We call on_cmd_loop() on the next iteration, after updating the LED.
   } else {
