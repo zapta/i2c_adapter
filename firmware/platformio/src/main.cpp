@@ -5,6 +5,9 @@
 
 #include "board.h"
 
+// #pragma GCC push_options
+// #pragma GCC optimize("Og")
+
 using board::i2c;
 using board::led;
 
@@ -126,19 +129,21 @@ static class EchoCommandHandler : public CommandHandler {
 //
 // Response:
 // - byte 0:  'K' for OK.
-// - byte 1:  Magic number MSB
-// - byte 2:  Magic number LSB
-// - byte 3:  Number of bytes to follow (3).
-// - byte 4:  Version of wire format API.
-// - byte 5:  MSB of firmware version.
-// - byte 6:  LSB of firmware version.
+// - byte 1:  'I'
+// - byte 2:  '2'
+// - byte 3:  'C'
+// - byte 4:  Number of bytes to follow (3).
+// - byte 5:  Version of wire format API.
+// - byte 6:  MSB of firmware version.
+// - byte 7:  LSB of firmware version.
 static class InfoCommandHandler : public CommandHandler {
  public:
   InfoCommandHandler() : CommandHandler("INFO") {}
   virtual bool on_cmd_loop() override {
     Serial.write('K');                      // OK.
-    Serial.write(0x45);                     // Magic number MSB.
-    Serial.write(0x67);                     // Magic number LSB.
+    Serial.write('I');
+    Serial.write('2');
+    Serial.write('C');
     Serial.write(0x03);                     // Number of bytes to follow.
     Serial.write(kApiVersion);              // API version.
     Serial.write(kFirmwareVersion >> 8);    // Firmware version MSB.
@@ -314,8 +319,7 @@ static class ReadCommandHandler : public CommandHandler {
 //
 // Error response:
 // - byte 0:    'E' for error.
-// - byte 1:    Error code, per the list below, providing more information about
-// the error.
+// - byte 1:    Error code, per the list below.
 //
 // OK response
 // - byte 0:    'K' for 'OK'.

@@ -27,14 +27,18 @@ class I2cAdapter:
 
     def __init__(self, port: str):
         self.__serial: Serial = Serial(port, timeout=1.0)
-        if not self.test_connection_to_driver():
+        if not self.test_connection_to_adapter():
             raise RuntimeError(f"i2c driver not detected at port {port}")
         adapter_info = self.__read_adapter_info()
         if adapter_info is None:
             raise RuntimeError(f"i2c driver failed to read adapter info at {port}")
         print(f"Adapter info: {adapter_info.hex(" ")}", flush=True)
-        if adapter_info[0] != 0x45 or adapter_info[1] != 0x67 or adapter_info[2] != 0x3:
-            raise RuntimeError(f"Unexpected I2C adapter info at {port}")
+        if (
+            adapter_info[0] != ord("I")
+            or adapter_info[1] != ord("2")
+            or adapter_info[2] != ord("C")
+            or adapter_info[3] != 0x3
+        ):            raise RuntimeError(f"Unexpected I2C adapter info at {port}")
 
     def __read_adapter_response(
         self, op_name: str, ok_resp_size: int, silent: bool
@@ -235,7 +239,7 @@ class I2cAdapter:
         """Writes the aux pins.
 
         :param values: An 8 bits integer with the bit values to write. In the range [0, 255].
-        :type pin: int
+        :type values: int
 
         :param mask: An 8 bits int with mask that indicates which auxilary pins should be written. If
             the corresponding bits is 1 than the pin is updated otherwise it's left as is.
@@ -258,7 +262,42 @@ class I2cAdapter:
             return False
         return True
 
-    def test_connection_to_driver(self, max_tries: int = 3) -> bool:
+    def read_aux_pin(self, aux_pin_index:int) -> bool | None:
+        """Read a single aux pin.
+
+        :param aux_pin_index: An aux pin index in the range [0, 7]
+        :type aux_pin_index: int
+
+        :returns: The boolean value of the pin or None if error.
+        :rtype: bool | None
+        """
+        assert isinstance(aux_pin_index, int)
+        assert 0 <= aux_pin_index <= 7
+        pins_values = self.read_aux_pins()
+        if pins_values is None:
+          return None
+        return True if pins_values & (1 << aux_pin_index) else False
+      
+    def write_aux_pin(self, aux_pin_index:int, value: bool | int) -> bool:
+        """Writes a single aux pin.
+
+        :param aux_pin_index: An aux pin index in the range [0, 7]
+        :type aux_pin_index: int
+
+        :param value: The value to write.
+        :type value: bool | int
+
+        :returns: True if OK, False otherwise.
+        :rtype: bool
+        """
+        assert isinstance(aux_pin_index, int)
+        assert 0 <= aux_pin_index <= 7
+        assert isinstance(value, (bool, int))
+        pin_mask = 1 << aux_pin_index
+        pin_value_mask = pin_mask if value else 0
+        return self.write_aux_pins(pin_value_mask, pin_mask)
+        
+    def test_connection_to_adapter(self, max_tries: int = 3) -> bool:
         """Tests connection to the I2C Adapter.
 
         The method tests if the I2C adapter exists and is responding. It is provided

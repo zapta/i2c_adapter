@@ -9,10 +9,11 @@
 Overview
 ========
 
-The I2C Adpater project allows to use off-the-shelf and inexpensive boards as USB to I2C bridge
-by Mac, Windows, Linux and operating systems that supports portable Python. This document
-describes the portable Python package ``i2c_adapter`` that provides the API to control the I2C Adapter.
+The I2C Adapter is a USB to SPI bridge that uses off-the-shelf and inexpensive boards such as the 
+Raspberry Pi Pico, and control it using the python package ``i2c_adapter``.
 
+For example, the diagram below shows the wiring to control an I2C OLED display using
+USB and Python API. The full code is provided in the ``examples`` directory of the github repository.
 
 |
 
@@ -24,7 +25,7 @@ describes the portable Python package ``i2c_adapter`` that provides the API to c
 Examples
 ========
 
-Write and read I2C device 0x08 with the I2C Adapter at serial port COM7:
+Writing and reading a I2C device 0x08 with the I2C Adapter at serial port COM7:
 
 .. code-block:: python
   :linenos:
@@ -38,7 +39,7 @@ Write and read I2C device 0x08 with the I2C Adapter at serial port COM7:
   print(data)
 
 
-Scan the I2C bus for devices:
+Scanning the I2C bus for devices:
 
 .. code-block:: python
   :linenos:
@@ -53,6 +54,35 @@ Scan the I2C bus for devices:
 
 |
 
+Reading and writing auxiliary I/O pins:
+
+.. code-block:: python
+  :linenos:
+
+  import time
+  from spi_adapter import SpiAdapter, AuxPinMode
+
+  # Customize for your system.
+  port = "COM18"
+  aux_out_pin = 0
+  aux_in_pin = 1
+
+  # Configure the two aux pins.
+  spi = SpiAdapter(port)
+  spi.set_aux_pin_mode(aux_out_pin, AuxPinMode.OUTPUT)
+  spi.set_aux_pin_mode(aux_in_pin, AuxPinMode.INPUT_PULLUP)
+
+  # Access the two pins.
+  i = 0
+  while True:
+    i += 1
+    spi.write_aux_pin(aux_out_pin, i % 2)   # Generates a square wave
+    in_value = spi.read_aux_pin(aux_in_pin)
+    print(f"{i:03d}: Input pin value: {in_value}", flush=True)
+    time.sleep(0.5)
+
+|
+
 Supported Boards
 ================
 
@@ -62,21 +92,21 @@ instructions with the corresponding I2C Adpter firmware from https://github.com/
 
 :Example: 
   For the Raspberry Pico and similar RP2040 boards, flash it by connecting the board
-  to your computer while holding the BOOTSEL button pressed to have the your computer recognize 
-  the board as a disk driver, then copying the firmware file to that driver.
+  to your computer while holding the BOOTSEL button. Once your computer recognized the board 
+  as a new hard driver, release the button and copy the firmware file to that hard drive.
 
-+-------------------------------------------------------------------------------+-----------+------------+----------+---------+
-|  Board                                                                        | SDA       |  SCL       | Internal | Max     |
-|                                                                               |           |            | Pullups  | Voltage |
-+===============================================================================+===========+============+==========+=========+
-| `Raspberry Pico <https://www.raspberrypi.com/products/raspberry-pi-pico/>`_   | GP14      | GP15       |  No      |  3.3V   |
-+-------------------------------------------------------------------------------+-----------+------------+----------+---------+
-| `Sparkfun Pro Micro RP2040 <https://www.sparkfun.com/products/18288>`_        | Qwiic SDA | Qwiic SCL  | 2.2K     |  3.3V   |
-+-------------------------------------------------------------------------------+-----------+------------+----------+---------+
-| `Adafruit KB2040 <https://learn.adafruit.com/adafruit-kb2040/overview>`_      | Qwiic SDA | Qwiic SCL  | No       |  3.3V   |
-+-------------------------------------------------------------------------------+-----------+------------+----------+---------+
-| `Adafruit QT Py RP2040 <https://www.adafruit.com/product/4900>`_              | Qwiic SDA | Qwiic SCL  | No       |  3.3V   |
-+-------------------------------------------------------------------------------+-----------+------------+----------+---------+
++-------------------------------------------------------------------------------+-----------+----------+------------+
+|  Board                                                                        | SDA, SCL  | Internal |  Aux Pins  |
+|                                                                               |           | Pullups  |            |
++===============================================================================+===========+==========+============+
+| `Raspberry Pico <https://www.raspberrypi.com/products/raspberry-pi-pico/>`_   | GP 14, 15 |  No      | GP 0-7     |
++-------------------------------------------------------------------------------+-----------+----------+------------+
+| `Sparkfun Pro Micro RP2040 <https://www.sparkfun.com/products/18288>`_        | Qwiic SDA | 2.2K     | GP 0-7     |
++-------------------------------------------------------------------------------+-----------+----------+------------+
+| `Adafruit KB2040 <https://learn.adafruit.com/adafruit-kb2040/overview>`_      | Qwiic SDA | No       | GP 0-7     |
++-------------------------------------------------------------------------------+-----------+----------+------------+
+| `Adafruit QT Py RP2040 <https://www.adafruit.com/product/4900>`_              | Qwiic SDA | No       | GP 0-7     |
++-------------------------------------------------------------------------------+-----------+----------+------------+
 
 |
 
@@ -108,184 +138,11 @@ API Reference
 The Wire Protocol
 =================
 
-The ``i2c_adapter`` package communicates with the I2C Adapter board by sending command requested on 
-a serial connection and recieving command response. Each command and response is made of a plain sequence of
-'binary' bytes with no special encoding such as end of line or escaping. Following is the 
-specification request/response byte sequences of each of the protocol commands. For more details,
-consult the `firmware protocol implementation <https://github.com/zapta/i2c_adapter/blob/main/firmware/platformio/src/main.cpp>`_.
-
-
-Write Command
--------------
-
-The write command writes 0 <= N <= 256 bytes to an I2C device with a given address.
-
-**Request**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | 'w' for Write.                              |
-    +----------------------+---------------------------------------------+
-    | Byte 1               | Device address in the range [0, 0x7f].      |
-    +----------------------+---------------------------------------------+
-    | Byte 2               | MSB of N, the data byte count.              |
-    +----------------------+---------------------------------------------+
-    | Byte 3               | LSB of N, the data byte count.              |
-    +----------------------+---------------------------------------------+
-    | ...                  | N Data bytes.                               |
-    +----------------------+---------------------------------------------+
-
-
-
-
-**Error Response**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | 'E' for error.                              |
-    +----------------------+---------------------------------------------+
-    | Byte 1               | Error status byte. Provides additional      |
-    |                      | informal information about the error.       |
-    +----------------------+---------------------------------------------+
-
-**OK Response**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | 'K' for OK.                                 |
-    +----------------------+---------------------------------------------+
-
-|
-
-Read Command
--------------
-
-The read command reads 0 <= N <= 256 bytes from the I2C device with a given address.
-
-**Request**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | 'r' for Read.                               |
-    +----------------------+---------------------------------------------+
-    | Byte 1               | Device address in the range [0, 0x7f].      |
-    +----------------------+---------------------------------------------+
-    | Byte 2               | MSB of N, the number of bytes to read.      |
-    +----------------------+---------------------------------------------+
-    | Byte 3               | LSB of N, the number of bytes to read.      |
-    +----------------------+---------------------------------------------+
-
-
-
-
-**Error Response**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | 'E' for error.                              |
-    +----------------------+---------------------------------------------+
-    | Byte 1               | Error status byte. Provides additional      |
-    |                      | informal information about the error.       |
-    +----------------------+---------------------------------------------+
-
-**OK Response**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | 'K' for OK.                                 |
-    +----------------------+---------------------------------------------+
-    | Byte 1               | MSB of N, the number of requested bytes.    |
-    +----------------------+---------------------------------------------+
-    | Byte 2               | LSB of N, the number of requested bytes.    |
-    +----------------------+---------------------------------------------+
-    | ...                  | The N bytes read.                           |
-    +----------------------+---------------------------------------------+
- 
-|
-
-Info Command
-------------
-
-The info command allows the client to retrieve information about the I2C Adapter.
-
-**Request**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | 'i' for Info.                               |
-    +----------------------+---------------------------------------------+
-
-
-
-**Response**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | Number of bytes to follow (3)               |
-    +----------------------+---------------------------------------------+
-    | Byte 1               | Wire format version (1)                     |
-    +----------------------+---------------------------------------------+
-    | Byte 2               | Firmware version number MSB (0)             |
-    +----------------------+---------------------------------------------+
-    | Byte 3               | Firmware version number LSB (1)             |
-    +----------------------+---------------------------------------------+
-
-|
-
-Echo Command
-------------
-
-The echo command accepts one data byte and sends it back. Allows the client to test the serial connection
-to the I2C Adapter and the I2C Adapter readiness to accept new commands.
-
-**Request**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | 'e' for Echo.                               |
-    +----------------------+---------------------------------------------+
-    | Byte 1               | A data byte to echo.                        |
-    +----------------------+---------------------------------------------+
-
-
-
-**Response**
-
-  .. table::
-    :width: 90%
-    :widths: 15,85
-
-    +----------------------+---------------------------------------------+
-    | Byte 0               | The data byte from the request.             |
-    +----------------------+---------------------------------------------+
-
+The ``i2c_adapter`` package communicates with the SPI Adapter board by sending commands
+and receiving command responses on a serial connection. The commands and responses are made of a plain sequence of
+'binary' bytes with no special encoding such as end of line or byte stuffing. For 
+an updated specification of the commands and their wire representation see the  
+`firmware protocol implementation <https://github.com/zapta/spi_adapter/blob/main/firmware/platformio/src/main.cpp>`_.
 
 |
 
