@@ -4,6 +4,7 @@ create an object of the  class I2CAdapter, and use the methods it provides.
 
 from typing import Optional, List, Tuple
 from serial import Serial
+from enum import Enum
 import time
 
 
@@ -38,7 +39,8 @@ class I2cAdapter:
             or adapter_info[1] != ord("2")
             or adapter_info[2] != ord("C")
             or adapter_info[3] != 0x3
-        ):            raise RuntimeError(f"Unexpected I2C adapter info at {port}")
+        ):
+            raise RuntimeError(f"Unexpected I2C adapter info at {port}")
 
     def __read_adapter_response(
         self, op_name: str, ok_resp_size: int, silent: bool
@@ -262,7 +264,7 @@ class I2cAdapter:
             return False
         return True
 
-    def read_aux_pin(self, aux_pin_index:int) -> bool | None:
+    def read_aux_pin(self, aux_pin_index: int) -> bool | None:
         """Read a single aux pin.
 
         :param aux_pin_index: An aux pin index in the range [0, 7]
@@ -275,10 +277,10 @@ class I2cAdapter:
         assert 0 <= aux_pin_index <= 7
         pins_values = self.read_aux_pins()
         if pins_values is None:
-          return None
+            return None
         return True if pins_values & (1 << aux_pin_index) else False
-      
-    def write_aux_pin(self, aux_pin_index:int, value: bool | int) -> bool:
+
+    def write_aux_pin(self, aux_pin_index: int, value: bool | int) -> bool:
         """Writes a single aux pin.
 
         :param aux_pin_index: An aux pin index in the range [0, 7]
@@ -296,7 +298,7 @@ class I2cAdapter:
         pin_mask = 1 << aux_pin_index
         pin_value_mask = pin_mask if value else 0
         return self.write_aux_pins(pin_value_mask, pin_mask)
-        
+
     def test_connection_to_adapter(self, max_tries: int = 3) -> bool:
         """Tests connection to the I2C Adapter.
 
@@ -347,5 +349,7 @@ class I2cAdapter:
         if n != len(req):
             print(f"I2C info: write mismatch, expected {len(req)}, got {n}", flush=True)
             return None
-        ok_resp = self.__read_adapter_response("I2C adapter info", ok_resp_size=6, silent=False)
+        ok_resp = self.__read_adapter_response(
+            "I2C adapter info", ok_resp_size=6, silent=False
+        )
         return ok_resp

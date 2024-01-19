@@ -110,6 +110,17 @@ instructions with the corresponding I2C Adpter firmware from https://github.com/
 
 |
 
+Raspberry PI Pico Pinout
+========================
+The diagram below shows the pinout for the popular Raspberry Pi Pico. For the other supported board, consult the table above.
+
+
+.. image:: ../www/pinout.png
+   :align: center
+   :height: 500px
+   
+|
+
 API Installation
 ================
 
