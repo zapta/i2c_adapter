@@ -1,8 +1,11 @@
 #!python
 
+# import sys
+# sys.path.insert(0, '../src')
+
 from i2c_adapter import I2cAdapter
 
-i2c = I2cAdapter(port="COM18")
+i2c = I2cAdapter(port="COM20")
 print(f"Scanning I2C bus 0x00 to 0x7f:")
 for adr in range(0, 127):
     if i2c.write(adr, bytearray([0]), silent=True):

@@ -350,6 +350,6 @@ class I2cAdapter:
             print(f"I2C info: write mismatch, expected {len(req)}, got {n}", flush=True)
             return None
         ok_resp = self.__read_adapter_response(
-            "I2C adapter info", ok_resp_size=6, silent=False
+            "I2C adapter info", ok_resp_size=7, silent=False
         )
         return ok_resp
