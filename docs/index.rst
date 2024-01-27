@@ -111,7 +111,7 @@ instructions with the corresponding I2C Adpter firmware from https://github.com/
 |
 
 :Note: 
-  The RP2040 contains weak I2C pullup resistor that are sufficient for many cases. If needed, add
+  The RP2040 contains weak I2C pullup resistors that are sufficient for many cases. If needed, add
   external 3K to 10K pullup resistors on the SDA and SCL lines.
 
 |
