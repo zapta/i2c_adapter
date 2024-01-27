@@ -96,17 +96,23 @@ instructions with the corresponding I2C Adpter firmware from https://github.com/
   as a new hard driver, release the button and copy the firmware file to that hard drive.
 
 +-------------------------------------------------------------------------------+-----------+----------+------------+
-|  Board                                                                        | SDA, SCL  | Internal |  Aux Pins  |
-|                                                                               |           | Pullups  |            |
+|  Board                                                                        | SDA, SCL  | Pullup   |  Aux Pins  |
+|                                                                               |           | ups      |            |
 +===============================================================================+===========+==========+============+
-| `Raspberry Pico <https://www.raspberrypi.com/products/raspberry-pi-pico/>`_   | GP 14, 15 |  No      | GP 0-7     |
+| `Raspberry Pico <https://www.raspberrypi.com/products/raspberry-pi-pico/>`_   | GP 14, 15 | Weak     | GP 0-7     |
 +-------------------------------------------------------------------------------+-----------+----------+------------+
 | `Sparkfun Pro Micro RP2040 <https://www.sparkfun.com/products/18288>`_        | Qwiic SDA | 2.2K     | GP 0-7     |
 +-------------------------------------------------------------------------------+-----------+----------+------------+
-| `Adafruit KB2040 <https://learn.adafruit.com/adafruit-kb2040/overview>`_      | Qwiic SDA | No       | GP 0-7     |
+| `Adafruit KB2040 <https://learn.adafruit.com/adafruit-kb2040/overview>`_      | Qwiic SDA | Weak     | GP 0-7     |
 +-------------------------------------------------------------------------------+-----------+----------+------------+
-| `Adafruit QT Py RP2040 <https://www.adafruit.com/product/4900>`_              | Qwiic SDA | No       | GP 0-7     |
+| `Adafruit QT Py RP2040 <https://www.adafruit.com/product/4900>`_              | Qwiic SDA | Weak     | GP 0-7     |
 +-------------------------------------------------------------------------------+-----------+----------+------------+
+
+|
+
+:Note: 
+  The RP2040 contains weak I2C pullup resistor that are sufficient for many cases. If needed, add
+  external 3K to 10K pullup resistors on the SDA and SCL lines.
 
 |
 
