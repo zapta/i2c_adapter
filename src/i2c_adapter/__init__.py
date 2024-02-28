@@ -33,7 +33,7 @@ class I2cAdapter:
         adapter_info = self.__read_adapter_info()
         if adapter_info is None:
             raise RuntimeError(f"i2c driver failed to read adapter info at {port}")
-        print(f"Adapter info: {adapter_info.hex(" ")}", flush=True)
+        print(f"Adapter info: {adapter_info.hex(' ')}", flush=True)
         if (
             adapter_info[0] != ord("I")
             or adapter_info[1] != ord("2")
